@@ -1,4 +1,4 @@
-package dev.korryr.agrimarket
+package dev.korryr.agrimarket.apllication.activity
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
