@@ -21,7 +21,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -45,67 +44,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import dev.korryr.agrimarket.ui.shareUI.AgribuzTextField
 import dev.korryr.agrimarket.R
-
-@Composable
-fun SignupScreen(
-    onSignupComplete: () -> Unit, onBack: () -> Unit
-) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-
-    Surface(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-
-                text = "Sign Up", style = MaterialTheme.typography.headlineMedium
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text("Email") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
-                label = { Text("Password") },
-                visualTransformation = PasswordVisualTransformation(),
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(24.dp))
-            Button(
-                onClick = onSignupComplete,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(text = "Register")
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-            TextButton(onClick = onBack) {
-                Text(text = "Back")
-            }
-        }
-    }
-}
-
+import dev.korryr.agrimarket.ui.shareUI.AgribuzTextField
 
 
 @Composable
@@ -210,7 +153,9 @@ fun AgribuzSignupScreen(
                     Image(
                         painter = painterResource(id = R.drawable.agribuzna), // Replace with your app logo
                         contentDescription = "App Logo",
-                        modifier = Modifier.size(40.dp)
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .size(40.dp)
                     )
                 }
             }
@@ -525,12 +470,4 @@ private fun isValidPhoneNumber(phone: String): Boolean {
     // Basic validation: at least 10 digits
     val digitsOnly = phone.filter { it.isDigit() }
     return digitsOnly.length >= 10
-}
-
-@Preview(showBackground = true)
-@Composable
-fun AgribuzSignupScreenPreview() {
-    MaterialTheme {
-        AgribuzSignupScreen()
-    }
 }
