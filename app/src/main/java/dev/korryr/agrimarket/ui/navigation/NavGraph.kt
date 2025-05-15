@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import dev.korryr.agrimarket.ui.features.auth.phoneAuth.register.AgribuzSignupScreen
 import dev.korryr.agrimarket.ui.features.auth.phoneAuth.register.SignupScreen
 import dev.korryr.agrimarket.ui.features.welcome.WelcomeScreen
 
@@ -25,9 +26,13 @@ fun NavGraph(
         }
 
         composable(Screen.SignIn.route) {
-            SignupScreen(
-                onSignupComplete = { /* TODO: navigate to login or home */ },
-                onBack = { navController.popBackStack() }
+            AgribuzSignupScreen(
+                onSignupClick = {
+                    navController.navigate(Screen.SignUp.route)
+                },
+                onLoginClick = {
+                    navController.navigate(Screen.SignUp.route)
+                }
             )
         }
 
