@@ -256,7 +256,7 @@ fun AgribuzTextField(
                             painter = if (passwordVisible) {
                                 painterResource(id = R.drawable.hide_icon)
                             } else {
-                                trailingIcon ?: painterResource(id = R.drawable.hide_icon) // Replace with your show password icon
+                                trailingIcon ?: painterResource(id = R.drawable.eye) // Replace with your show password icon
                             },
                             contentDescription = if (passwordVisible) "Hide password" else "Show password",
                             tint = iconColor
