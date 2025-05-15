@@ -30,7 +30,7 @@ fun NavGraph(
                     navController.navigate(Screen.SignUp.route)
                 },
                 onLoginClick = {
-                    navController.navigate(Screen.SignUp.route)
+                    //navController.navigate(Screen.SignUp.route)
                 }
             )
         }
@@ -38,10 +38,10 @@ fun NavGraph(
         composable(Screen.SignUp.route) {
             AgribuzSignupScreen(
                 onSignupClick = {
-                    navController.navigate(Screen.SignUp.route)
+                    navController.navigate(Screen.SignIn.route)
                 },
                 onLoginClick = {
-                    navController.navigate(Screen.SignUp.route)
+                    navController.navigate(Screen.SignIn.route)
                 }
             )
         }

@@ -323,7 +323,7 @@ fun AgribuzWelcomeScreen(
                             Spacer(modifier = Modifier.width(8.dp))
 
                             Icon(
-                                painter = painterResource(id = R.drawable.right_arrow), // Replace with arrow icon
+                                painter = painterResource(id = R.drawable.right_arrow),
                                 contentDescription = "Arrow",
                                 modifier = Modifier.size(24.dp)
                             )

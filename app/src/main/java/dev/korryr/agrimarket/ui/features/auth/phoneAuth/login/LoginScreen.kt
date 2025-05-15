@@ -379,7 +379,7 @@ fun AgribuzLoginScreen(
                 alpha = 0.8f
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(60.dp))
         }
     }
 }
