@@ -1,4 +1,4 @@
-package dev.korryr.agrimarket.ui.features.auth.register
+package dev.korryr.agrimarket.ui.features.auth.phoneAuth.register
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

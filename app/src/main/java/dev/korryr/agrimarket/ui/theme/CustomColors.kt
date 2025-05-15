@@ -11,6 +11,7 @@ object AgriCustomColors {
     val success = SuccessGreen
     val warning = WarningAmber
     val info = InfoBlue
+    val error = AlertRed
 
     // Feature-specific colors
     val water = SkyBlue
