@@ -21,4 +21,3 @@ dependencyResolutionManagement {
 
 rootProject.name = "Agri Market"
 include(":app")
- 
