@@ -32,6 +32,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,8 +44,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.korryr.agrimarket.R
@@ -58,8 +57,8 @@ fun AgribuzLoginScreen(
     onSignupClick: () -> Unit = {}
 ) {
     // State variables
-    var phone by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    var phone by rememberSaveable { mutableStateOf("") }
+    var password by rememberSaveable { mutableStateOf("") }
 
     // Validation states
     var phoneError by remember { mutableStateOf("") }
@@ -145,7 +144,9 @@ fun AgribuzLoginScreen(
                     Image(
                         painter = painterResource(id = R.drawable.agribuzna),
                         contentDescription = "App Logo",
-                        modifier = Modifier.size(65.dp)
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .size(65.dp)
                     )
                 }
 

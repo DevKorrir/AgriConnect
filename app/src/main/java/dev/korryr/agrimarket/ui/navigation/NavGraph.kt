@@ -6,7 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import dev.korryr.agrimarket.ui.features.auth.phoneAuth.login.AgribuzLoginScreen
 import dev.korryr.agrimarket.ui.features.auth.phoneAuth.register.AgribuzSignupScreen
-import dev.korryr.agrimarket.ui.features.welcome.WelcomeScreen
+import dev.korryr.agrimarket.ui.features.welcome.AgribuzWelcomeScreen
 
 @Composable
 fun NavGraph(
@@ -18,8 +18,8 @@ fun NavGraph(
         //modifier = Modifier.padding(it)
     ){
         composable(Screen.Welcome.route){
-            WelcomeScreen(
-                onGetStarted = {
+            AgribuzWelcomeScreen(
+                onGetStartedClick = {
                     navController.navigate(Screen.SignIn.route)
                 }
             )
