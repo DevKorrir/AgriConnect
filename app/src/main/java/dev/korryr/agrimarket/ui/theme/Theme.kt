@@ -1,6 +1,5 @@
 package dev.korryr.agrimarket.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -12,15 +11,55 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = TealGreen,
+    onPrimary = White,
+    primaryContainer = DarkTeal,
+    onPrimaryContainer = LightLeafGreen,
+    secondary = Amber,
+    onSecondary = DeepSoil,
+    secondaryContainer = HarvestOrange,
+    onSecondaryContainer = White,
+    tertiary = SeedPurple,
+    onTertiary = White,
+    tertiaryContainer = SeedPurple.copy(alpha = 0.7f),
+    onTertiaryContainer = White,
+    error = AlertRed,
+    onError = White,
+    errorContainer = AlertRed.copy(alpha = 0.7f),
+    onErrorContainer = White,
+    background = DarkBackground,
+    onBackground = PrimaryTextDark,
+    surface = DarkSurface,
+    onSurface = PrimaryTextDark,
+    surfaceVariant = DarkElevated,
+    onSurfaceVariant = SecondaryTextDark,
+    outline = SecondaryTextDark.copy(alpha = 0.5f)
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
+    primary = TealGreen,
+    onPrimary = White,
+    primaryContainer = LightLeafGreen.copy(alpha = 0.3f),
+    onPrimaryContainer = DarkTeal,
+    secondary = Amber,
+    onSecondary = DeepSoil,
+    secondaryContainer = Amber.copy(alpha = 0.3f),
+    onSecondaryContainer = FertileEarthBrown,
+    tertiary = SeedPurple,
+    onTertiary = White,
+    tertiaryContainer = SeedPurple.copy(alpha = 0.1f),
+    onTertiaryContainer = SeedPurple,
+    error = AlertRed,
+    onError = White,
+    errorContainer = AlertRed.copy(alpha = 0.1f),
+    onErrorContainer = AlertRed,
+    background = SoftWhite,
+    onBackground = PrimaryTextLight,
+    surface = LightGray,
+    onSurface = PrimaryTextLight,
+    surfaceVariant = White,
+    onSurfaceVariant = SecondaryTextLight,
+    outline = SecondaryTextLight.copy(alpha = 0.5f)
 
     /* Other default colors to override
     background = Color(0xFFFFFBFE),
