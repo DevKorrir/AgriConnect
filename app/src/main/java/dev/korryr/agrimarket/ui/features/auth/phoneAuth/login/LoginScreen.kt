@@ -20,6 +20,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -29,6 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,41 +48,64 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import dev.korryr.agrimarket.R
+import dev.korryr.agrimarket.ui.features.auth.phoneAuth.viewModel.AuthUiState
+import dev.korryr.agrimarket.ui.features.auth.phoneAuth.viewModel.AuthViewModel
 import dev.korryr.agrimarket.ui.shareUI.AgribuzTextField
 
 @Composable
 fun AgribuzLoginScreen(
-    onLoginClick: () -> Unit = {},
-    onForgotPasswordClick: () -> Unit = {},
-    onGoogleSignInClick: () -> Unit = {},
-    onSignupClick: () -> Unit = {}
+    onLoginSuccess: (String) -> Unit,
+    onForgotPassword: () -> Unit,
+    onGoogleSignIn: () -> Unit,
+    onNavigateToSignup: () -> Unit,
+    viewModel: AuthViewModel = hiltViewModel()
 ) {
     // State variables
-    var phone by rememberSaveable { mutableStateOf("") }
+    var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
+    var showErrors by remember { mutableStateOf(false) }
 
     // Validation states
-    var phoneError by remember { mutableStateOf("") }
+    var emailError by remember { mutableStateOf("") }
     var passwordError by remember { mutableStateOf("") }
 
     // Form validity
     var isFormValid by remember { mutableStateOf(false) }
 
     // Icons
-    val phoneIcon = painterResource(id = R.drawable.phone_call)
+    val phoneIcon = painterResource(id = R.drawable.mail)
     val passwordIcon = painterResource(id = R.drawable.padlock)
     val googleIcon = painterResource(id = R.drawable.google)
+    val authState by viewModel.authState.collectAsState()
 
-    // Validate form
-    LaunchedEffect(phone, password) {
-        validateForm(
-            phone, password,
-            { phoneErr -> phoneError = phoneErr },
-            { passErr -> passwordError = passErr },
-            { valid -> isFormValid = valid }
-        )
+    // React to successful login
+    LaunchedEffect(authState) {
+        if (authState is AuthUiState.Success) {
+            onLoginSuccess((authState as AuthUiState.Success).user.uid)
+        }
     }
+
+//    // Validate form on input change
+//    LaunchedEffect(email, password) {
+//        var valid = true
+//        if (email.isBlank()) {
+//            emailError = "Email is required"
+//            valid = false
+//        } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+//            emailError = "Enter a valid email"
+//            valid = false
+//        } else emailError = ""
+//
+//        if (password.isBlank()) {
+//            passwordError = "Password is required"
+//            valid = false
+//        } else passwordError = ""
+//
+//        isFormValid = valid
+//    }
+
 
     // Background gradient
     val backgroundGradient = Brush.verticalGradient(
@@ -196,16 +221,16 @@ fun AgribuzLoginScreen(
                 ) {
                     // Phone field with cute styling
                     AgribuzTextField(
-                        value = phone,
+                        value = email,
                         onValueChange = {
-                            phone = it
-                            if (phoneError.isNotEmpty()) phoneError = ""
+                            email = it
+                            if (emailError.isNotEmpty()) emailError = ""
                         },
-                        label = "Phone Number",
+                        label = "Email",
                         leadingIcon = phoneIcon,
-                        error = phoneError,
+                        error = emailError,
                         keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Phone,
+                            keyboardType = KeyboardType.Email,
                             imeAction = ImeAction.Next
                         ),
                         modifier = Modifier.fillMaxWidth()
@@ -218,19 +243,16 @@ fun AgribuzLoginScreen(
                         value = password,
                         onValueChange = {
                             password = it
-                            if (passwordError.isNotEmpty()) passwordError = ""
+                            //if (passwordError.isNotEmpty()) passwordError = ""
                         },
                         label = "Password",
                         leadingIcon = passwordIcon,
                         isPassword = true,
-                        error = passwordError,
+                        error = if (showErrors) passwordError else "",
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Password,
                             imeAction = ImeAction.Done
                         ),
-                        onDone = {
-                            if (isFormValid) onLoginClick()
-                        },
                         modifier = Modifier.fillMaxWidth()
                     )
 
@@ -240,7 +262,7 @@ fun AgribuzLoginScreen(
                         horizontalArrangement = Arrangement.End
                     ) {
                         TextButton(
-                            onClick = onForgotPasswordClick,
+                            onClick = onForgotPassword,
                             contentPadding = PaddingValues(4.dp)
                         ) {
                             Text(
@@ -257,8 +279,27 @@ fun AgribuzLoginScreen(
 
                     // Login button with cute gradient
                     Button(
-                        onClick = onLoginClick,
-                        enabled = isFormValid,
+                        onClick = {
+                            showErrors = true
+                            // Validate on click
+                            var valid = true
+                            if (email.isBlank()) {
+                                emailError = "Email is required"
+                                valid = false
+                            } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                                emailError = "Invalid email"
+                                valid = false
+                            } else emailError = ""
+
+                            if (password.isBlank()) {
+                                passwordError = "Password is required"
+                                valid = false
+                            } else passwordError = ""
+
+                            isFormValid = valid
+                            if (valid) viewModel.login(email, password)
+                        },
+                        enabled = authState !is AuthUiState.Loading,
                         shape = RoundedCornerShape(16.dp),
                         contentPadding = PaddingValues(vertical = 16.dp),
                         colors = ButtonDefaults.buttonColors(
@@ -271,6 +312,10 @@ fun AgribuzLoginScreen(
                             .fillMaxWidth()
                             .height(56.dp)
                     ) {
+                        if (authState is AuthUiState.Loading) CircularProgressIndicator(
+                            color = Color.White,
+                            modifier = Modifier.size(24.dp)
+                        ) else
                         Text(
                             text = "Log In",
                             style = MaterialTheme.typography.titleMedium.copy(
@@ -307,7 +352,7 @@ fun AgribuzLoginScreen(
 
                     // Google sign in button with cute design
                     OutlinedButton(
-                        onClick = onGoogleSignInClick,
+                        onClick = onGoogleSignIn,
                         shape = RoundedCornerShape(16.dp),
                         contentPadding = PaddingValues(vertical = 12.dp),
                         border = ButtonDefaults.outlinedButtonBorder.copy(
@@ -356,7 +401,7 @@ fun AgribuzLoginScreen(
                     style = MaterialTheme.typography.bodyMedium
                 )
 
-                TextButton(onClick = onSignupClick) {
+                TextButton(onClick = onNavigateToSignup) {
                     Text(
                         text = "Sign Up",
                         color = MaterialTheme.colorScheme.primary,
@@ -384,25 +429,29 @@ fun AgribuzLoginScreen(
     }
 }
 
+fun isValidEmail(email: String): Boolean {
+    return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
+}
+
 // Validation function
 private fun validateForm(
-    phone: String,
+    email: String,
     password: String,
-    setPhoneError: (String) -> Unit,
+    setEmailError: (String) -> Unit,
     setPasswordError: (String) -> Unit,
     setFormValid: (Boolean) -> Unit
 ) {
     var isValid = true
 
-    // Phone validation
-    if (phone.trim().isEmpty()) {
-        setPhoneError("Phone number is required")
+    // email validation
+    if (email.trim().isEmpty()) {
+        setEmailError("Email is required")
         isValid = false
-    } else if (!isValidPhoneNumber(phone)) {
-        setPhoneError("Enter a valid phone number")
+    } else if (!isValidEmail(email)) {
+        setEmailError("Enter a valid email address")
         isValid = false
     } else {
-        setPhoneError("")
+        setEmailError("")
     }
 
     // Password validation
@@ -416,9 +465,3 @@ private fun validateForm(
     setFormValid(isValid)
 }
 
-// Simple phone validation
-private fun isValidPhoneNumber(phone: String): Boolean {
-    // Basic validation: at least 10 digits
-    val digitsOnly = phone.filter { it.isDigit() }
-    return digitsOnly.length >= 10
-}

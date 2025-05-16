@@ -1,6 +1,8 @@
 package dev.korryr.agrimarket.ui.navigation
 
+import android.widget.Toast
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -12,6 +14,7 @@ import dev.korryr.agrimarket.ui.features.welcome.AgribuzWelcomeScreen
 fun NavGraph(
     navController: NavHostController
 ){
+    val context = LocalContext.current
     NavHost(
         navController = navController,
         startDestination = Screen.Welcome.route,
@@ -26,12 +29,16 @@ fun NavGraph(
         }
         composable(Screen.SignIn.route) {
             AgribuzLoginScreen(
-                onSignupClick = {
+                onNavigateToSignup = {
                     navController.navigate(Screen.SignUp.route)
                 },
-                onLoginClick = {
+                onLoginSuccess = {
                     //navController.navigate(Screen.SignUp.route)
-                }
+                },
+                onForgotPassword = {  },
+                onGoogleSignIn = {
+                    Toast.makeText(context, "Coming soon", Toast.LENGTH_SHORT).show()
+                },
             )
         }
 
