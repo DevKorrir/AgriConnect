@@ -3,6 +3,9 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.gms.google.services)
+    //id("com.google.devtools.ksp")
+    id("com.google.dagger.hilt.android")
+    kotlin("kapt")
 }
 
 android {
@@ -61,4 +64,15 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    //di
+    // Dagger-Hilt
+    implementation ("com.google.dagger:hilt-android:2.56.2")
+    kapt          ("com.google.dagger:hilt-android-compiler:2.56.2")
+
+    // Hilt + Compose (only if you’re using Jetpack Compose)
+    implementation ("androidx.hilt:hilt-navigation-compose:1.0.0")
+
+    // Firebase & Google Services
+    implementation("com.google.android.gms:play-services-auth:21.3.0")
 }

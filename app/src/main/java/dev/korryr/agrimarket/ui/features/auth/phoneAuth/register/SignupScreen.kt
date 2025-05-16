@@ -20,12 +20,14 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,17 +50,21 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import dev.korryr.agrimarket.R
+import dev.korryr.agrimarket.ui.features.auth.phoneAuth.viewModel.AuthViewModel
 import dev.korryr.agrimarket.ui.shareUI.AgribuzTextField
+import androidx.hilt.navigation.compose.hiltViewModel
+import dev.korryr.agrimarket.ui.features.auth.phoneAuth.viewModel.AuthUiState
 
 
 @Composable
 fun AgribuzSignupScreen(
     onSignupClick: () -> Unit = {},
-    onLoginClick: () -> Unit = {}
+    onLoginClick: () -> Unit = {},
+    viewModel: AuthViewModel = hiltViewModel()
 ) {
     // State variables
     var name by rememberSaveable { mutableStateOf("") }
-    var phone by rememberSaveable { mutableStateOf("") }
+    var phoneNumber by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
     var confirmPassword by rememberSaveable { mutableStateOf("") }
 
@@ -79,17 +85,26 @@ fun AgribuzSignupScreen(
     val phoneIcon = painterResource(id = R.drawable.phone_call) // Replace with your phone icon
     val passwordIcon = painterResource(id = R.drawable.padlock)
 
-    // Calculate password strength
-    LaunchedEffect(password) {
-        passwordStrength = calculatePasswordStrength(password)
-        validateForm(
-            name, phone, password, confirmPassword,
-            { nameErr -> nameError = nameErr },
-            { phoneErr -> phoneError = phoneErr },
-            { passErr -> passwordError = passErr },
-            { confirmErr -> confirmPasswordError = confirmErr },
-            { valid -> isFormValid = valid }
-        )
+    var showErrors by remember { mutableStateOf(false) }
+    val state by viewModel.uiState.collectAsState()
+
+//    // Calculate password strength
+//    LaunchedEffect(password) {
+//        passwordStrength = calculatePasswordStrength(password)
+//        validateForm(
+//            name, phone, password, confirmPassword,
+//            { nameErr -> nameError = nameErr },
+//            { phoneErr -> phoneError = phoneErr },
+//            { passErr -> passwordError = passErr },
+//            { confirmErr -> confirmPasswordError = confirmErr },
+//            { valid -> isFormValid = valid }
+//        )
+//    }
+
+    LaunchedEffect(state) {
+        if (state is AuthUiState.Success) {
+            onSignupClick()
+        }
     }
 
     // Background gradient
@@ -221,9 +236,9 @@ fun AgribuzSignupScreen(
 
                     // Phone field
                     AgribuzTextField(
-                        value = phone,
+                        value = phoneNumber,
                         onValueChange = {
-                            phone = it
+                            phoneNumber = it
                             if (phoneError.isNotEmpty()) phoneError = ""
                         },
                         label = "Phone Number",
@@ -285,7 +300,13 @@ fun AgribuzSignupScreen(
 
                     // Signup button
                     Button(
-                        onClick = onSignupClick,
+                        //onClick = onSignupClick,
+                        onClick = {
+                            showErrors = true
+                            if (phoneError.isEmpty() && passwordError.isEmpty()) {
+                                viewModel.register(phoneNumber, password)
+                            }
+                        },
                         enabled = isFormValid,
                         shape = RoundedCornerShape(16.dp),
                         contentPadding = PaddingValues(vertical = 16.dp),
@@ -299,12 +320,21 @@ fun AgribuzSignupScreen(
                             .fillMaxWidth()
                             .height(56.dp)
                     ) {
-                        Text(
-                            text = "Sign Up",
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.Bold
-                            )
-                        )
+
+                        if (state is AuthUiState.Loading) CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary)
+                        else Text("Register")
+
+//                        Text(
+//                            text = "Sign Up",
+//                            style = MaterialTheme.typography.titleMedium.copy(
+//                                fontWeight = FontWeight.Bold
+//                            )
+//                        )
+                    }
+
+                    if (state is AuthUiState.Error) {
+                        Spacer(Modifier.height(8.dp))
+                        Text((state as AuthUiState.Error).message, color = MaterialTheme.colorScheme.error)
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -321,7 +351,9 @@ fun AgribuzSignupScreen(
                             style = MaterialTheme.typography.bodyMedium
                         )
 
-                        TextButton(onClick = onLoginClick) {
+                        TextButton(
+                            onClick = onLoginClick
+                        ) {
                             Text(
                                 text = "Log In",
                                 color = MaterialTheme.colorScheme.primary,

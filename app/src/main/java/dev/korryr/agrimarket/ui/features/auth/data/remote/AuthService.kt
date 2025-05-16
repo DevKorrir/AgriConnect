@@ -9,7 +9,7 @@ import javax.inject.Inject
 
 interface AuthService {
     fun signUp(
-        phoneNumber: Number,
+        phoneNumber: String,
         password: String,
     ): Flow<Result<FirebaseUser>>
 }
@@ -24,7 +24,9 @@ class FirebaseAuthService @Inject constructor(
             // Placeholder logic: Firebase does not support sign-up with phone and password directly.
             // You would typically implement phone auth with verification code.
             // For now, simulate with email-like logic for structure.
-            val result = firebaseAuth.createUserWithEmailAndPassword("$phoneNumber@agrimarket.com", password).await()
+            val result = firebaseAuth
+                .createUserWithEmailAndPassword("$phoneNumber@agrimarket.com", password)
+                .await()
             result.user?.let { emit(Result.success(it)) }
         } catch (e: Exception) {
             emit(Result.failure(e))
