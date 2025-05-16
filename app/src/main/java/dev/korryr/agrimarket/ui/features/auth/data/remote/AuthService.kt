@@ -2,34 +2,51 @@ package dev.korryr.agrimarket.ui.features.auth.data.remote
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
-import javax.inject.Inject
 
+/**
+ * Service interface for email/password authentication.
+ */
 interface AuthService {
-    fun signUp(
-        phoneNumber: String,
-        password: String,
-    ): Flow<Result<FirebaseUser>>
+    /**
+     * Creates a new user with email & password.
+     * @return the created FirebaseUser
+     */
+    suspend fun signUp(email: String, password: String): Result<FirebaseUser>
+
+    /**
+     * Signs in an existing user with email & password.
+     * @return the authenticated FirebaseUser
+     */
+    suspend fun login(email: String, password: String): Result<FirebaseUser>
 }
 
-
-class FirebaseAuthService @Inject constructor(
+/**
+ * Firebase implementation of AuthService using email/password.
+ */
+class FirebaseAuthService(
     private val firebaseAuth: FirebaseAuth
 ) : AuthService {
-    override fun signUp(phoneNumber: String, password: String): Flow<Result<FirebaseUser>> = flow {
-        emit(Result.failure(Throwable("LOADING")))
-        try {
-            // Placeholder logic: Firebase does not support sign-up with phone and password directly.
-            // You would typically implement phone auth with verification code.
-            // For now, simulate with email-like logic for structure.
-            val result = firebaseAuth
-                .createUserWithEmailAndPassword("$phoneNumber@agrimarket.com", password)
-                .await()
-            result.user?.let { emit(Result.success(it)) }
+
+    override suspend fun signUp(email: String, password: String): Result<FirebaseUser> {
+        return try {
+            val result = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
+            val user = result.user
+            if (user != null) Result.success(user)
+            else Result.failure(Throwable("User creation failed"))
         } catch (e: Exception) {
-            emit(Result.failure(e))
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun login(email: String, password: String): Result<FirebaseUser> {
+        return try {
+            val result = firebaseAuth.signInWithEmailAndPassword(email, password).await()
+            val user = result.user
+            if (user != null) Result.success(user)
+            else Result.failure(Throwable("Authentication failed"))
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
 }

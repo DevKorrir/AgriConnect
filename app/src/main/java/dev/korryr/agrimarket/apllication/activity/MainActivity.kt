@@ -18,6 +18,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+
             AgriMarketTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     AgriMarketingApp(

@@ -1,6 +1,7 @@
 package dev.korryr.agrimarket.di
 
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -32,5 +33,11 @@ object AppModule {
     fun provideAuthRepository(
         authService: AuthService
     ): AuthRepository = AuthRepository(authService)
+
+    @Provides
+    @Singleton
+    fun provideFirebaseFirestore(): FirebaseFirestore {
+        return FirebaseFirestore.getInstance()
+    }
 }
 

@@ -75,4 +75,30 @@ dependencies {
 
     // Firebase & Google Services
     implementation("com.google.android.gms:play-services-auth:21.3.0")
+
+    // Logging & Debug
+    implementation("com.jakewharton.timber:timber:5.0.1")
+    implementation("io.github.microutils:kotlin-logging-jvm:2.1.23")
+
+    //firebase
+    implementation(platform("com.google.firebase:firebase-bom:33.13.0"))
+    implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-firestore-ktx")
+    implementation("com.google.firebase:firebase-analytics-ktx")
+    //implementation ("com.google.firebase:firebase-appcheck-playintegrity:18.0.0")
+
+    //courotine
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
+
+    // app check dependecins
+    //implementation ("com.google.firebase:firebase-appcheck:18.0.0")
+   // implementation ("com.google.firebase:firebase-appcheck-playintegrity:18.0.0")
+    //debugImplementation ("com.google.firebase:firebase-appcheck-debug:18.0.0")
+    // Debug provider for local testing
+
+
+
+
+
+
 }

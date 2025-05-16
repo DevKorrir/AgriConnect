@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "796439013355-dlj9ria0up341fh6706jkd95nqi9rgok.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "dev.korryr.agrimarket",
+            "certificate_hash": "365aebfc400dcabf28420d6cd7e13404b0a3858c"
+          }
+        },
+        {
           "client_id": "796439013355-pag9tp27bppbe04nc5hobkdpvj36bqd8.apps.googleusercontent.com",
           "client_type": 3
         }

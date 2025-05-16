@@ -37,10 +37,10 @@ fun NavGraph(
 
         composable(Screen.SignUp.route) {
             AgribuzSignupScreen(
-                onSignupClick = {
+                onSignedUp = {
                     navController.navigate(Screen.SignIn.route)
                 },
-                onLoginClick = {
+                onNavigateToLogin = {
                     navController.navigate(Screen.SignIn.route)
                 }
             )

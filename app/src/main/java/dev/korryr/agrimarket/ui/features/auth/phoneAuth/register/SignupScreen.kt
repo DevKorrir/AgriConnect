@@ -1,5 +1,6 @@
 package dev.korryr.agrimarket.ui.features.auth.phoneAuth.register
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -49,63 +50,54 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import dev.korryr.agrimarket.R
+import dev.korryr.agrimarket.ui.features.auth.phoneAuth.viewModel.AuthUiState
 import dev.korryr.agrimarket.ui.features.auth.phoneAuth.viewModel.AuthViewModel
 import dev.korryr.agrimarket.ui.shareUI.AgribuzTextField
-import androidx.hilt.navigation.compose.hiltViewModel
-import dev.korryr.agrimarket.ui.features.auth.phoneAuth.viewModel.AuthUiState
 
 
+@SuppressLint("ContextCastToActivity")
 @Composable
 fun AgribuzSignupScreen(
-    onSignupClick: () -> Unit = {},
-    onLoginClick: () -> Unit = {},
+    onSignedUp: (uid: String) -> Unit,
+    onNavigateToLogin: () -> Unit,
     viewModel: AuthViewModel = hiltViewModel()
 ) {
     // State variables
-    var name by rememberSaveable { mutableStateOf("") }
-    var phoneNumber by rememberSaveable { mutableStateOf("") }
+    var displayName by rememberSaveable { mutableStateOf("") }
+    var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
     var confirmPassword by rememberSaveable { mutableStateOf("") }
 
     // Validation states
     var nameError by remember { mutableStateOf("") }
-    var phoneError by remember { mutableStateOf("") }
+    var emailError by remember { mutableStateOf("") }
     var passwordError by remember { mutableStateOf("") }
     var confirmPasswordError by remember { mutableStateOf("") }
+    var showErrors by remember { mutableStateOf(false) }
 
     // Password strength (0-4)
     var passwordStrength by remember { mutableStateOf(0) }
-
+    //var passwordScore by remember { mutableStateOf(0) }
+    //val strengthLabel = passwordStrengthLabel(passwordScore)
     // Form validity
     var isFormValid by remember { mutableStateOf(false) }
 
     // Icons
     val userIcon = painterResource(id = R.drawable.user) // Replace with your user icon
-    val phoneIcon = painterResource(id = R.drawable.phone_call) // Replace with your phone icon
+    val emailIcon = painterResource(id = R.drawable.mail) // Replace with your phone icon
     val passwordIcon = painterResource(id = R.drawable.padlock)
 
-    var showErrors by remember { mutableStateOf(false) }
-    val state by viewModel.uiState.collectAsState()
 
-//    // Calculate password strength
-//    LaunchedEffect(password) {
-//        passwordStrength = calculatePasswordStrength(password)
-//        validateForm(
-//            name, phone, password, confirmPassword,
-//            { nameErr -> nameError = nameErr },
-//            { phoneErr -> phoneError = phoneErr },
-//            { passErr -> passwordError = passErr },
-//            { confirmErr -> confirmPasswordError = confirmErr },
-//            { valid -> isFormValid = valid }
-//        )
-//    }
+    val authState by viewModel.authState.collectAsState()
 
-    LaunchedEffect(state) {
-        if (state is AuthUiState.Success) {
-            onSignupClick()
+    LaunchedEffect(authState) {
+        if (authState is AuthUiState.Success) {
+            onSignedUp((authState as AuthUiState.Success).user.uid)
         }
     }
+
 
     // Background gradient
     val backgroundGradient = Brush.verticalGradient(
@@ -209,7 +201,7 @@ fun AgribuzSignupScreen(
                     )
 
                     Text(
-                        text = "Join our farming community",
+                        text = "Join our Agribuz community",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(top = 4.dp, bottom = 24.dp)
@@ -217,9 +209,9 @@ fun AgribuzSignupScreen(
 
                     // Name field
                     AgribuzTextField(
-                        value = name,
+                        value = displayName,
                         onValueChange = {
-                            name = it
+                            displayName = it
                             if (nameError.isNotEmpty()) nameError = ""
                         },
                         label = "Full Name",
@@ -236,16 +228,16 @@ fun AgribuzSignupScreen(
 
                     // Phone field
                     AgribuzTextField(
-                        value = phoneNumber,
+                        value = email,
+                        leadingIcon = emailIcon,
                         onValueChange = {
-                            phoneNumber = it
-                            if (phoneError.isNotEmpty()) phoneError = ""
+                            email = it
+                            if (emailError.isNotEmpty()) emailError = ""
                         },
-                        label = "Phone Number",
-                        leadingIcon = phoneIcon,
-                        error = phoneError,
+                        label = "Email",
+                        error = emailError,
                         keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Phone,
+                            keyboardType = KeyboardType.Email,
                             imeAction = ImeAction.Next
                         ),
                         modifier = Modifier.fillMaxWidth()
@@ -258,6 +250,7 @@ fun AgribuzSignupScreen(
                         value = password,
                         onValueChange = {
                             password = it
+                            passwordStrength = calculatePasswordStrength(it)
                             if (passwordError.isNotEmpty()) passwordError = ""
                         },
                         label = "Password",
@@ -290,9 +283,6 @@ fun AgribuzSignupScreen(
                             keyboardType = KeyboardType.Password,
                             imeAction = ImeAction.Done
                         ),
-                        onDone = {
-                            if (isFormValid) onSignupClick()
-                        },
                         modifier = Modifier.fillMaxWidth()
                     )
 
@@ -300,14 +290,20 @@ fun AgribuzSignupScreen(
 
                     // Signup button
                     Button(
-                        //onClick = onSignupClick,
                         onClick = {
                             showErrors = true
-                            if (phoneError.isEmpty() && passwordError.isEmpty()) {
-                                viewModel.register(phoneNumber, password)
-                            }
+                            //validate the fields
+                            validateForm(
+                                displayName, email, password, confirmPassword,
+                                { nameErr -> nameError = nameErr }, //nameError = it
+                                { emailErr -> emailError = emailErr },
+                                { passErr -> passwordError = passErr },
+                                { confirmErr -> confirmPasswordError = confirmErr },
+                                { valid -> isFormValid = valid }
+                            )
+                            if (isFormValid) viewModel.signUp(email, password, displayName)
                         },
-                        enabled = isFormValid,
+                        enabled = authState !is AuthUiState.Loading,
                         shape = RoundedCornerShape(16.dp),
                         contentPadding = PaddingValues(vertical = 16.dp),
                         colors = ButtonDefaults.buttonColors(
@@ -321,20 +317,25 @@ fun AgribuzSignupScreen(
                             .height(56.dp)
                     ) {
 
-                        if (state is AuthUiState.Loading) CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary)
-                        else Text("Register")
-
-//                        Text(
-//                            text = "Sign Up",
-//                            style = MaterialTheme.typography.titleMedium.copy(
-//                                fontWeight = FontWeight.Bold
-//                            )
-//                        )
+                        if (authState is AuthUiState.Loading) CircularProgressIndicator(
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.size(24.dp),
+                            strokeWidth = 2.dp
+                            ) else Text(
+                            "Register",
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                            )
                     }
 
-                    if (state is AuthUiState.Error) {
+                    if (authState is AuthUiState.Error) {
+
                         Spacer(Modifier.height(8.dp))
-                        Text((state as AuthUiState.Error).message, color = MaterialTheme.colorScheme.error)
+
+                        Text(
+                            text = (authState as AuthUiState.Error).message,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall
+                        )
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -352,7 +353,7 @@ fun AgribuzSignupScreen(
                         )
 
                         TextButton(
-                            onClick = onLoginClick
+                            onClick = onNavigateToLogin,
                         ) {
                             Text(
                                 text = "Log In",
@@ -433,14 +434,24 @@ private fun calculatePasswordStrength(password: String): Int {
     return minOf(score, 4)
 }
 
+/** Map score to a user‐friendly label. */
+private fun passwordStrengthLabel(score: Int): String = when (score) {
+    0, 1 -> "Very weak"
+    2    -> "Weak"
+    3    -> "Medium"
+    4    -> "Strong"
+    5    -> "Very strong"
+    else -> ""
+}
+
 // Validation function
 private fun validateForm(
     name: String,
-    phone: String,
+    email: String,
     password: String,
     confirmPassword: String,
     setNameError: (String) -> Unit,
-    setPhoneError: (String) -> Unit,
+    setEmailError: (String) -> Unit,
     setPasswordError: (String) -> Unit,
     setConfirmPasswordError: (String) -> Unit,
     setFormValid: (Boolean) -> Unit
@@ -458,15 +469,19 @@ private fun validateForm(
         setNameError("")
     }
 
-    // Phone validation
-    if (phone.trim().isEmpty()) {
-        setPhoneError("Phone number is required")
+    fun isValidEmail(email: String): Boolean {
+        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
+    }
+
+// email validation
+    if (email.trim().isEmpty()) {
+        setEmailError("Email is required")
         isValid = false
-    } else if (!isValidPhoneNumber(phone)) {
-        setPhoneError("Enter a valid phone number")
+    } else if (!isValidEmail(email)) {
+        setEmailError("Enter a valid email address")
         isValid = false
     } else {
-        setPhoneError("")
+        setEmailError("")
     }
 
     // Password validation
@@ -497,9 +512,35 @@ private fun validateForm(
     setFormValid(isValid)
 }
 
-// Simple phone validation
-private fun isValidPhoneNumber(phone: String): Boolean {
-    // Basic validation: at least 10 digits
-    val digitsOnly = phone.filter { it.isDigit() }
-    return digitsOnly.length >= 10
-}
+
+//// Simple phone validation
+//private fun isValidPhoneNumber(phone: String): Boolean {
+//    // Basic validation: at least 10 digits
+//    val digitsOnly = phone.filter { it.isDigit() }
+//    return digitsOnly.length >= 10
+//}
+//
+//fun formatToE164(localNumber: String): String {
+//    val cleaned = localNumber.replace("[^\\d]".toRegex(), "")
+//    return if (cleaned.startsWith("0")) {
+//        "+254${cleaned.substring(1)}"
+//    } else if (cleaned.startsWith("254")) {
+//        "+$cleaned"
+//    } else if (!cleaned.startsWith("+")) {
+//        "+254$cleaned"
+//    } else {
+//        cleaned
+//    }
+//}
+//
+//private fun formatPhoneNumber(input: String): String {
+//    val trimmed = input.trim().replace(" ", "").replace("-", "")
+//    return when {
+//        trimmed.startsWith("+") -> trimmed
+//        trimmed.startsWith("0") -> "+254" + trimmed.drop(1)
+//        trimmed.length == 9 && trimmed.startsWith("7") -> "+254$trimmed"
+//        else -> trimmed // fallback; optionally return error here
+//    }
+//}
+
+
