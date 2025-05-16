@@ -70,7 +70,7 @@ fun AgribuzLoginScreen(
     // Icons
     val phoneIcon = painterResource(id = R.drawable.phone_call)
     val passwordIcon = painterResource(id = R.drawable.padlock)
-    val googleIcon = painterResource(id = R.drawable.google_icon)
+    val googleIcon = painterResource(id = R.drawable.google)
 
     // Validate form
     LaunchedEffect(phone, password) {
