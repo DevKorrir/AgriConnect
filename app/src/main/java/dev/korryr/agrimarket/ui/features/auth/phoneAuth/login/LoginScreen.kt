@@ -87,26 +87,6 @@ fun AgribuzLoginScreen(
         }
     }
 
-//    // Validate form on input change
-//    LaunchedEffect(email, password) {
-//        var valid = true
-//        if (email.isBlank()) {
-//            emailError = "Email is required"
-//            valid = false
-//        } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-//            emailError = "Enter a valid email"
-//            valid = false
-//        } else emailError = ""
-//
-//        if (password.isBlank()) {
-//            passwordError = "Password is required"
-//            valid = false
-//        } else passwordError = ""
-//
-//        isFormValid = valid
-//    }
-
-
     // Background gradient
     val backgroundGradient = Brush.verticalGradient(
         colors = listOf(
@@ -187,7 +167,7 @@ fun AgribuzLoginScreen(
                 )
 
                 Text(
-                    text = "Log in to your farming account",
+                    text = "Log in to your Agri Makegting account",
                     style = MaterialTheme.typography.bodyLarge.copy(
                         color = Color.White,
                         fontWeight = FontWeight.Medium
