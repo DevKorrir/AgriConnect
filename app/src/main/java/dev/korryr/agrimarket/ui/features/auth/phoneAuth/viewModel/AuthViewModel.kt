@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import com.google.firebase.firestore.FirebaseFirestore
+import dev.korryr.agrimarket.ui.features.auth.preferences.AuthPreferencesRepository
 
 /**
  * Represents a user signing up with email/password.
@@ -27,7 +28,8 @@ sealed class AuthUiState {
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val repo: AuthRepository,
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore,
+    private val preferenceRepository: AuthPreferencesRepository
 ) : ViewModel() {
 
     private val _authState = MutableStateFlow<AuthUiState>(AuthUiState.Idle)
@@ -75,6 +77,9 @@ class AuthViewModel @Inject constructor(
         viewModelScope.launch {
             repo.login(email, password).collect { result ->
                 result.fold(onSuccess = { user ->
+                    val uid = user.uid
+                    //save to preference
+                    preferenceRepository.setLoggedIn(uid)
                     _authState.value = AuthUiState.Success(user)
                 }, onFailure = {
                     _authState.value = AuthUiState.Error(it.message ?: "Login failed")

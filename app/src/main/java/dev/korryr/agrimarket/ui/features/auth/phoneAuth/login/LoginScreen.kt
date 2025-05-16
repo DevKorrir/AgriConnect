@@ -324,6 +324,16 @@ fun AgribuzLoginScreen(
                         )
                     }
 
+                    // Display authentication errors
+                    if (authState is AuthUiState.Error) {
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            text = (authState as AuthUiState.Error).message,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+
                     Spacer(modifier = Modifier.height(24.dp))
 
                     // OR divider with cute styling

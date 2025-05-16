@@ -96,6 +96,8 @@ dependencies {
     //debugImplementation ("com.google.firebase:firebase-appcheck-debug:18.0.0")
     // Debug provider for local testing
 
+        //preference
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
 
 
 
