@@ -6,6 +6,7 @@ sealed class Screen(
     object Welcome : Screen("welcome")
     object SignIn : Screen("signIn")
     object SignUp : Screen("signUp")
+    object Admin : Screen("admin")
     object ForgotPassword : Screen("forgotPassword")
     object Home : Screen("home")
     object MarketPlace : Screen("marketplace")

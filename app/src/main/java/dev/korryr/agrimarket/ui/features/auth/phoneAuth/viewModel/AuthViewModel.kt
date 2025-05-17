@@ -1,19 +1,18 @@
 package dev.korryr.agrimarket.ui.features.auth.phoneAuth.viewModel
 
-import android.app.Activity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.korryr.agrimarket.ui.features.auth.data.rrepo.AuthRepository
+import dev.korryr.agrimarket.ui.features.auth.preferences.AuthPreferencesRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import com.google.firebase.firestore.FirebaseFirestore
-import dev.korryr.agrimarket.ui.features.auth.preferences.AuthPreferencesRepository
 
 /**
  * Represents a user signing up with email/password.
@@ -22,12 +21,14 @@ sealed class AuthUiState {
     object Idle : AuthUiState()
     object Loading : AuthUiState()
     data class Success(val user: FirebaseUser) : AuthUiState()
+    data class SuccessWithRole(val user: FirebaseUser, val role: String) : AuthUiState()
     data class Error(val message: String) : AuthUiState()
 }
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val repo: AuthRepository,
+    private val auth: FirebaseAuth,
     private val firestore: FirebaseFirestore,
     private val preferenceRepository: AuthPreferencesRepository
 ) : ViewModel() {
@@ -65,22 +66,45 @@ class AuthViewModel @Inject constructor(
     }
 
     /**
-     * Log in an existing user via repository.
+     * Logs in the user and checks Firestore for 'role'.
+     * Saves session to preferences and emits Admin or Success state.
      */
-    fun login(email: String, password: String) {
+    fun login(email: String, password: String, isAdminLogin: Boolean) {
         if (email.isBlank() || password.isBlank()) {
             _authState.value = AuthUiState.Error("Please provide email and password")
             return
         }
 
         _authState.value = AuthUiState.Loading
+
         viewModelScope.launch {
             repo.login(email, password).collect { result ->
                 result.fold(onSuccess = { user ->
-                    val uid = user.uid
-                    //save to preference
-                    preferenceRepository.setLoggedIn(uid)
-                    _authState.value = AuthUiState.Success(user)
+                    // Save logged-in UID
+                    preferenceRepository.setLoggedIn(user.uid)
+
+                    // Fetch user role from Firestore
+                    firestore.collection("users")
+                        .document(user.uid)
+                        .get()
+                        .addOnSuccessListener { document ->
+                            val role = document.getString("role") ?: "USER"
+
+                            // ✅ Admin role validation
+                            if (isAdminLogin && role != "ADMIN") {
+                                _authState.value = AuthUiState.Error("You are not an admin")
+                            } else {
+                                // Save login
+                                viewModelScope.launch {
+                                    preferenceRepository.setLoggedIn(user.uid)
+                                }
+                                _authState.value = AuthUiState.SuccessWithRole(user, role ?: "USER")
+                            }
+                        }
+                        .addOnFailureListener { e ->
+                            _authState.value = AuthUiState.Error("Role fetch failed: ${e.localizedMessage}")
+
+                        }
                 }, onFailure = {
                     _authState.value = AuthUiState.Error(it.message ?: "Login failed")
                 })
