@@ -2,6 +2,7 @@ package dev.korryr.agrimarket.ui.features.auth.phoneAuth.login
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,6 +23,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -79,6 +81,10 @@ fun AgribuzLoginScreen(
     val passwordIcon = painterResource(id = R.drawable.padlock)
     val googleIcon = painterResource(id = R.drawable.google)
     val authState by viewModel.authState.collectAsState()
+
+    // Gesture & toggle for admin login
+    var tapCount by remember { mutableStateOf(0)}
+    var isAdminLogin by remember { mutableStateOf(false)}
 
     // React to successful login
     LaunchedEffect(authState) {
@@ -142,6 +148,12 @@ fun AgribuzLoginScreen(
                     modifier = Modifier
                         .size(90.dp)
                         .clip(CircleShape)
+                        .clickable{
+                            if(!isAdminLogin){
+                                tapCount++
+                                if (tapCount >= 7) isAdminLogin = true
+                            }
+                        }
                         .background(Color.White)
                         .padding(12.dp),
                     contentAlignment = Alignment.Center
@@ -158,7 +170,7 @@ fun AgribuzLoginScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = "Welcome Back!",
+                    text = if (isAdminLogin) "Admin Login" else "Welcome Back!",
                     style = MaterialTheme.typography.headlineMedium.copy(
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
@@ -167,7 +179,7 @@ fun AgribuzLoginScreen(
                 )
 
                 Text(
-                    text = "Log in to your Agri Makegting account",
+                    text = if (isAdminLogin) "Perform Admin tasks" else "Log in to your Agri Makegting account",
                     style = MaterialTheme.typography.bodyLarge.copy(
                         color = Color.White,
                         fontWeight = FontWeight.Medium
@@ -206,7 +218,7 @@ fun AgribuzLoginScreen(
                             email = it
                             if (emailError.isNotEmpty()) emailError = ""
                         },
-                        label = "Email",
+                        label = if (isAdminLogin) "Admin Email" else "Email",
                         leadingIcon = phoneIcon,
                         error = emailError,
                         keyboardOptions = KeyboardOptions(
@@ -233,6 +245,9 @@ fun AgribuzLoginScreen(
                             keyboardType = KeyboardType.Password,
                             imeAction = ImeAction.Done
                         ),
+                       // onDone = {
+                           // if (isFormValid) onLoginSuccess(email, password, isAdminLogin)
+                        //},
                         modifier = Modifier.fillMaxWidth()
                     )
 
@@ -297,7 +312,7 @@ fun AgribuzLoginScreen(
                             modifier = Modifier.size(24.dp)
                         ) else
                         Text(
-                            text = "Log In",
+                            text = if (isAdminLogin) "Admin Log In" else "Log In",
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold
                             )
@@ -332,7 +347,7 @@ fun AgribuzLoginScreen(
                             color = MaterialTheme.colorScheme.outline
                         )
 
-                        Divider(
+                        HorizontalDivider(
                             modifier = Modifier.weight(1f),
                             color = MaterialTheme.colorScheme.outlineVariant
                         )
@@ -386,7 +401,7 @@ fun AgribuzLoginScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Don't have an account?",
+                    text = if (isAdminLogin) "I don't have Admin Roles" else "Don't have an account?",
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodyMedium
                 )
