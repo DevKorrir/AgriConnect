@@ -12,6 +12,7 @@ import dev.korryr.agrimarket.ui.features.auth.preferences.AuthPreferencesReposit
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 /**
@@ -75,40 +76,35 @@ class AuthViewModel @Inject constructor(
             return
         }
 
-        _authState.value = AuthUiState.Loading
-
         viewModelScope.launch {
-            repo.login(email, password).collect { result ->
-                result.fold(onSuccess = { user ->
-                    // Save logged-in UID
-                    preferenceRepository.setLoggedIn(user.uid)
+            _authState.value = AuthUiState.Loading
 
-                    // Fetch user role from Firestore
-                    firestore.collection("users")
-                        .document(user.uid)
-                        .get()
-                        .addOnSuccessListener { document ->
-                            val role = document.getString("role") ?: "USER"
+            repo.login(email, password)
+                .fold(
+                    onFailure = { _authState.value = AuthUiState.Error(it.message ?: "Login failed") },
+                    onSuccess = { user ->
+                        // 1) persist session
+                        preferenceRepository.setLoggedIn(user.uid)
 
-                            // ✅ Admin role validation
-                            if (isAdminLogin && role != "ADMIN") {
-                                _authState.value = AuthUiState.Error("You are not an admin")
-                            } else {
-                                // Save login
-                                viewModelScope.launch {
-                                    preferenceRepository.setLoggedIn(user.uid)
+                        // 2) fetch role
+                        repo.fetchRole(user.uid)
+                            .fold(
+                                onSuccess = { role ->
+                                    // 3) enforce admin if required
+                                    if (isAdminLogin && role != "ADMIN") {
+                                        _authState.value = AuthUiState.Error("You are not an admin")
+                                    } else {
+                                        _authState.value = AuthUiState.SuccessWithRole(user, role)
+                                    }
+                                },
+                                onFailure = { exception ->
+                                    _authState.value = AuthUiState.Error(
+                                        "Role lookup failed: ${exception.message}"
+                                    )
                                 }
-                                _authState.value = AuthUiState.SuccessWithRole(user, role ?: "USER")
-                            }
-                        }
-                        .addOnFailureListener { e ->
-                            _authState.value = AuthUiState.Error("Role fetch failed: ${e.localizedMessage}")
-
-                        }
-                }, onFailure = {
-                    _authState.value = AuthUiState.Error(it.message ?: "Login failed")
-                })
-            }
+                            )
+                    }
+                )
         }
     }
 
@@ -120,6 +116,7 @@ class AuthViewModel @Inject constructor(
             "uid" to user.uid,
             "email" to user.email,
             "displayName" to (user.displayName ?: ""),
+            "role" to "FARMER",
             "createdAt" to FieldValue.serverTimestamp()
         )
         firestore.collection("users").document(user.uid)

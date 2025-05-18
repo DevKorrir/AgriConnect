@@ -40,6 +40,7 @@ fun NavGraph(
         else -> Screen.Welcome.route
     }
 
+
     NavHost(
         navController = navController,
         startDestination = startRoute,
@@ -57,10 +58,29 @@ fun NavGraph(
                 when (val state = authState) {
 
                     is AuthUiState.SuccessWithRole -> {
-                        navController.navigate(Screen.Admin.route) {
-                            popUpTo(Screen.SignIn.route) { inclusive = true }
-                        }
+                        if (state.role == "ADMIN") navController.navigate(Screen.Admin.route) { popUpTo(Screen.SignIn.route){ inclusive = true } }
+                        else navController.navigate(Screen.Home.route)    { popUpTo(Screen.SignIn.route){ inclusive = true } }
                     }
+
+//                    is AuthUiState.SuccessWithRole -> {
+//                        when (state.role.uppercase()) {
+//                            "ADMIN" -> navController.navigate(Screen.Admin.route) {
+//                                popUpTo(Screen.SignIn.route) { inclusive = true }
+//                            }
+//
+//                            "FARMER", "SELLER" -> navController.navigate(Screen.Home.route) {
+//                                popUpTo(Screen.SignIn.route) { inclusive = true }
+//                            }
+//
+//                            else -> {
+//                                Toast.makeText(context, "Unrecognized role: ${state.role}", Toast.LENGTH_LONG).show()
+//                                // You could optionally navigate to a generic screen or logout.
+//                                navController.navigate(Screen.SignIn.route) {
+//                                    popUpTo(Screen.SignIn.route) { inclusive = true }
+//                                }
+//                            }
+//                        }
+//                    }
 
                     is AuthUiState.Success -> {
                         navController.navigate(Screen.Home.route) {

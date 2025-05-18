@@ -93,13 +93,13 @@ fun AgribuzLoginScreen(
     var tapCount by remember { mutableStateOf(0)}
     var isAdminLogin by remember { mutableStateOf(false)}
 
-//    // React to successful login
-//    LaunchedEffect(authState) {
-//        if (authState is AuthUiState.Success) {
-//            val userMail = (authState as AuthUiState.Success).user.uid
-//            onLoginSuccess(userMail, password, isAdminLogin)
-//        }
-//    }
+    // React to successful login
+    LaunchedEffect(authState) {
+        if (authState is AuthUiState.Success) {
+            val userMail = (authState as AuthUiState.Success).user.uid
+            onLoginSuccess(userMail, password, isAdminLogin)
+        }
+    }
 
     LaunchedEffect(authState) {
         when (val state = authState) {
