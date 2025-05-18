@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -21,6 +22,7 @@ import dev.korryr.agrimarket.ui.features.welcome.AgribuzWelcomeScreen
 
 @Composable
 fun NavGraph(
+    modifier: Modifier = Modifier,
     navController: NavHostController
 ){
     val context = LocalContext.current
@@ -44,7 +46,7 @@ fun NavGraph(
     NavHost(
         navController = navController,
         startDestination = startRoute,
-        //modifier = Modifier.padding(it)
+        modifier = modifier
     ){
         composable(Screen.Welcome.route){
             AgribuzWelcomeScreen(

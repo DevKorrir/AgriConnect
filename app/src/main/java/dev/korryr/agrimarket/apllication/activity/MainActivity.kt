@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import dagger.hilt.android.AndroidEntryPoint
 import dev.korryr.agrimarket.apllication.mainApp.AgriMarketingApp
 import dev.korryr.agrimarket.ui.theme.AgriMarketTheme
@@ -20,11 +21,11 @@ class MainActivity : ComponentActivity() {
         setContent {
 
             AgriMarketTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                //Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     AgriMarketingApp(
-                        modifier = Modifier.padding(innerPadding)
+                        modifier = Modifier.padding(1.dp)
                     )
-                }
+               // }
             }
         }
     }

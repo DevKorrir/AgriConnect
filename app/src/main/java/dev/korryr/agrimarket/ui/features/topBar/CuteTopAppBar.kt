@@ -44,21 +44,21 @@ fun CuteTopAppBar(
                 horizontalArrangement = Arrangement.Center
             ) {
                 // Cute farm icon
-                Box(
-                    modifier = Modifier
-                        .size(36.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primaryContainer)
-                        .padding(6.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.crops_potatos),
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
+//                Box(
+//                    modifier = Modifier
+//                        .size(36.dp)
+//                        .clip(CircleShape)
+//                        .background(MaterialTheme.colorScheme.primaryContainer)
+//                        .padding(6.dp),
+//                    contentAlignment = Alignment.Center
+//                ) {
+//                    Icon(
+//                        painter = painterResource(id = R.drawable.google),
+//                        contentDescription = null,
+//                        tint = MaterialTheme.colorScheme.primary,
+//                        modifier = Modifier.size(24.dp)
+//                    )
+//                }
 
                 Spacer(modifier = Modifier.width(12.dp))
 

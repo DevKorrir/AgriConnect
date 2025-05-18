@@ -1,6 +1,5 @@
 package dev.korryr.agrimarket.ui.features.home
 
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccountCircle
@@ -23,15 +22,12 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
-import dev.korryr.agrimarket.ui.features.bottomNav.view.CuteBottomNavBar
 import dev.korryr.agrimarket.ui.features.home.model.DashboardItem
 import dev.korryr.agrimarket.ui.features.home.model.NavItem
 import dev.korryr.agrimarket.ui.features.home.model.TaskItem
 import dev.korryr.agrimarket.ui.features.home.presentatiosn.AdminDrawerContent
-import dev.korryr.agrimarket.ui.features.home.presentatiosn.HomeContent
+import dev.korryr.agrimarket.ui.features.home.view.HomeContent
 import dev.korryr.agrimarket.ui.features.topBar.CuteTopAppBar
 import kotlinx.coroutines.launch
 
@@ -58,15 +54,6 @@ fun HomePage(
         NavItem("Orders", Icons.Rounded.ShoppingCart, "orders"),
         NavItem("Settings", Icons.Rounded.Settings, "settings")
     )
-
-    // Bottom navigation items
-    val bottomNavItems = listOf(
-        NavItem("Home", Icons.Rounded.Home, "home"),
-        NavItem("Marketplace", Icons.Rounded.ShoppingCart, "market"),
-        NavItem("Activity", Icons.Rounded.List, "activity"),
-        NavItem("Profile", Icons.Rounded.AccountCircle, "profile")
-    )
-
     // Sample dashboard items
     val dashboardItems = listOf(
         DashboardItem("Crop Status", "75%", Color(0xFF9CCC65), "All crops growing well"),
@@ -98,34 +85,13 @@ fun HomePage(
         }
     ) {
         Scaffold(
-            topBar = {
-                CuteTopAppBar(
-                    title = "Agribuz Farm",
-                    onMenuClick = {
-                        scope.launch {
-                            if (drawerState.isClosed) drawerState.open() else drawerState.close()
-                        }
-                    },
-                    notificationCount = notificationCount
-                )
-            },
-            bottomBar = {
-                CuteBottomNavBar(
-                    items = bottomNavItems,
-                    selectedItemIndex = selectedNavItem,
-                    onItemSelected = { index ->
-                        selectedNavItem = index
-                        onNavigate(bottomNavItems[index].route)
-                    }
-                )
-            },
+
             floatingActionButton = {
                 FloatingActionButton(
                     onClick = { /* Handle add action */ },
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    //contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                     shape = CircleShape,
-                    modifier = Modifier.padding(bottom = 80.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.Add,
@@ -137,7 +103,8 @@ fun HomePage(
             HomeContent(
                 dashboardItems = dashboardItems,
                 taskItems = taskItems,
-                contentPadding = paddingValues
+                //modifier = Modifier.padding(paddingValues)
+                //contentPadding = paddingValues
             )
         }
     }
