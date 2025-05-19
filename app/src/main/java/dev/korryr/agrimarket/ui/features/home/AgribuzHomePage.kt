@@ -10,7 +10,9 @@ import androidx.compose.material.icons.automirrored.rounded.List
 import androidx.compose.material.icons.automirrored.rounded.Message
 import androidx.compose.material.icons.rounded.AccountCircle
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Assessment
 import androidx.compose.material.icons.rounded.Home
+import androidx.compose.material.icons.rounded.People
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.ShoppingCart
 import androidx.compose.material3.DrawerValue
@@ -27,24 +29,24 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.material.icons.rounded.Email
-import androidx.compose.material.icons.rounded.Message
+import androidx.hilt.navigation.compose.hiltViewModel
 import dev.korryr.agrimarket.appDrawer.presentation.AdminDrawerContent
+import dev.korryr.agrimarket.ui.features.auth.phoneAuth.viewModel.AuthViewModel
 import dev.korryr.agrimarket.ui.features.home.model.DashboardItem
 import dev.korryr.agrimarket.ui.features.home.model.NavItem
 import dev.korryr.agrimarket.ui.features.home.model.TaskItem
 import dev.korryr.agrimarket.ui.features.home.view.HomeContent
 import dev.korryr.agrimarket.ui.features.topBar.CuteTopAppBar
-import androidx.compose.material.icons.rounded.People
-import androidx.compose.material.icons.rounded.Assessment
-import androidx.compose.ui.Modifier
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomePage(
-    onNavigate: (String) -> Unit = {}
+    authViewModel: AuthViewModel = hiltViewModel(),
+    onNavigate: (String) -> Unit = {},
+    onLoggedOut: () -> Unit = {}
 ) {
     // Drawer state
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -103,7 +105,10 @@ fun HomePage(
                         }
                         onNavigate(route)
                     },
-                    currentRoute = "Home"
+                    currentRoute = "Home",
+
+                    onLoggedOut = onLoggedOut
+
                 )
             }
         }

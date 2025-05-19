@@ -47,7 +47,8 @@ import com.google.firebase.auth.FirebaseAuth
 fun AdminDrawerContent(
     items: List<NavItem>,
     currentRoute: String,
-    onItemClick: (String) -> Unit
+    onItemClick: (String) -> Unit,
+    onLoggedOut: () -> Unit
 ) {
     val auth = FirebaseAuth.getInstance()
     val user = auth.currentUser
@@ -162,14 +163,25 @@ fun AdminDrawerContent(
 
         HorizontalDivider()
 
-        Spacer(modifier = Modifier.height(12.dp))
+        //Spacer(modifier = Modifier.height(12.dp))
 
         // Logout at bottom
         NavigationDrawerItem(
-            icon = { Icon(Icons.AutoMirrored.Rounded.ExitToApp, null) },
-            label = { Text("Log Out") },
+            icon = {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Rounded.ExitToApp,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error
+                    )
+                   },
+            label = {
+                Text(
+                    text = "Log Out",
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.error
+                ) },
             selected = false,
-            onClick = { onItemClick("logout") },
+            onClick =  onLoggedOut,
             modifier = Modifier.padding(vertical = 4.dp)
         )
 

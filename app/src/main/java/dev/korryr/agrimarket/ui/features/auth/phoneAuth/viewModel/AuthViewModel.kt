@@ -128,36 +128,19 @@ class AuthViewModel @Inject constructor(
                 _authState.value = AuthUiState.Error("Firestore error: ${e.localizedMessage}")
             }
     }
+    fun logout() {
 
-//    private fun registerFarmer(uid: String, farmer: Farmer) {
-//        val data = mapOf(
-//            "name" to farmer.name,
-//            "phone" to farmer.phone,
-//            "verified" to true,
-//            "uid" to uid,
-//            "createdAt" to FieldValue.serverTimestamp()
-//        )
-//        firestore.collection("farmers").document(uid)
-//            .set(data)
-//            .addOnSuccessListener {
-//                _phoneState.value = PhoneAuthState.Registered("Registration successful")
-//            }
-//            .addOnFailureListener { e ->
-//                _phoneState.value = PhoneAuthState.Error("Firestore error: ${e.localizedMessage}")
-//            }
-//    }
-//
-//    // Format helper (e.g. E.164)
-//    private fun formatToE164(localNumber: String): String {
-//        val cleaned = localNumber.replace("[^\\d]".toRegex(), "")
-//        return when {
-//            cleaned.startsWith("0") -> "+254${cleaned.drop(1)}"
-//            cleaned.startsWith("254") -> "+$cleaned"
-//            cleaned.startsWith("+") -> cleaned
-//            cleaned.length == 9 -> "+254$cleaned"
-//            else -> cleaned
-//        }
-//    }
+        // clear firebase session
+        auth.signOut()
+
+        // clear preferences
+        viewModelScope.launch {
+            preferenceRepository.setLoggedOut()
+        }
+
+        //reset locs=al ui state
+        _authState.value = AuthUiState.Idle
+    }
 
 
 
