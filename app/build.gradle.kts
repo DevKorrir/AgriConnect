@@ -57,6 +57,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose.android)
     implementation(libs.firebase.auth)
     implementation(libs.play.services.dtdi)
+    implementation(libs.androidx.datastore.core.android)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -101,6 +102,7 @@ dependencies {
 
     //extend icons
     implementation("androidx.compose.material:material-icons-extended")
+    implementation("androidx.compose.material:material-icons-extended:<version>")
 
 
 

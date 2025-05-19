@@ -48,9 +48,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.auth
 import dev.korryr.agrimarket.R
 import dev.korryr.agrimarket.ui.features.home.model.DashboardItem
 import dev.korryr.agrimarket.ui.features.home.model.TaskItem

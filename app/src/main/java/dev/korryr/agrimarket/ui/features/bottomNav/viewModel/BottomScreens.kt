@@ -20,7 +20,7 @@ sealed class BottomScreens(
     )
 
     object MarketPlace : BottomScreens("market", Icons.Outlined.Shop, "Market")
-    object Orders : BottomScreens("purchasing", Icons.AutoMirrored.Outlined.List, "Orders")
+    object Orders : BottomScreens("orders", Icons.AutoMirrored.Outlined.List, "Orders")
     object Message: BottomScreens("message", Icons.AutoMirrored.Outlined.Message, "Messages")
     object Profile : BottomScreens("account", Icons.Outlined.AccountCircle, "Profile")
 }

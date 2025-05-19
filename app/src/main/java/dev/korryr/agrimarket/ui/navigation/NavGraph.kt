@@ -130,7 +130,11 @@ fun NavGraph(
         }
 
         composable(Screen.Home.route) {
-            HomePage()
+            HomePage(
+                onNavigate = { route ->
+                    navController.navigate(route)
+                }
+            )
         }
 
         composable(Screen.Admin.route) {
