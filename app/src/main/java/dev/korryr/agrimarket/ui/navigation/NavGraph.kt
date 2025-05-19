@@ -44,7 +44,7 @@ fun NavGraph(
     //declare route
     val startRoute = when {
         isLoggedIn -> Screen.Home.route
-        else -> Screen.Home.route
+        else -> Screen.Welcome.route
     }
 
 
@@ -130,7 +130,18 @@ fun NavGraph(
         }
 
         composable(Screen.Home.route) {
-            HomePage()
+            HomePage(
+
+                onNavigate = { route ->
+                    navController.navigate(route)
+                },
+                onLoggedOut = {
+                    authViewModel.logout()
+                    navController.navigate(Screen.SignIn.route){
+                        popUpTo(Screen.Home.route){ inclusive = true }
+                    }
+                }
+            )
         }
 
         composable(Screen.Admin.route) {

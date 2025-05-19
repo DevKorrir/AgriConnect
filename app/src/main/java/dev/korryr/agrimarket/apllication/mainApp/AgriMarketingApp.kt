@@ -51,7 +51,6 @@ fun AgriMarketingApp(
 
     val bottomItems = listOf(
        BottomScreens.Home,
-       // BottomScreens.MarketPlace,
         BottomScreens.MarketPlace,
         BottomScreens.Message,
         BottomScreens.Orders,

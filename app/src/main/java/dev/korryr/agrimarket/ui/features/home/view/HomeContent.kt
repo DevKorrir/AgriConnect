@@ -1,5 +1,11 @@
 package dev.korryr.agrimarket.ui.features.home.view
 
+import android.icu.util.Calendar
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -34,6 +40,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,6 +54,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.google.firebase.auth.FirebaseAuth
 import dev.korryr.agrimarket.R
 import dev.korryr.agrimarket.ui.features.home.model.DashboardItem
 import dev.korryr.agrimarket.ui.features.home.model.TaskItem
@@ -63,227 +71,212 @@ fun HomeContent(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(contentPadding)
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp)
+    val auth = FirebaseAuth.getInstance()
+    val user = auth.currentUser
+    val userName = user?.displayName ?: "Guest"
+
+    var visible by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        visible = true
+    }
+
+    AnimatedVisibility(
+        visible = visible,
+        enter = fadeIn() + slideInVertically(
+            initialOffsetY = { -40 },
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioMediumBouncy,
+                stiffness = Spring.StiffnessLow
+            )
+        )
     ) {
-
-        // 1. Search Bar
-        var query by remember { mutableStateOf("") }
-        Surface(
-            tonalElevation = 4.dp,
-            shape = RoundedCornerShape(24.dp),
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp)
+                .fillMaxSize()
+                .padding(contentPadding)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp)
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            ) {
-                Icon(Icons.Default.Search, contentDescription = "Search")
-                Spacer(Modifier.width(8.dp))
-                BasicTextField(
-                    value = query,
-                    onValueChange = { query = it },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(
-                        imeAction = ImeAction.Search,
-                        keyboardType = KeyboardType.Text
-                    ),
-                    keyboardActions = KeyboardActions(
-                        onSearch = { /* handle search */ }
-                    ),
-                    decorationBox = { inner ->
-                        if (query.isEmpty()) Text("Search products, tasks…", color = Color.Gray)
-                        inner()
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-        }
-        Spacer(Modifier.height(16.dp))
 
-        // 2. Category Chips
-        val categories = listOf("Seeds", "Fertilizers", "Equipment", "Livestock")
-        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            items(categories) { cat ->
-                CategoryChip(label = cat) { /* onCategorySelected(cat) */ }
-            }
-        }
-        Spacer(Modifier.height(16.dp))
-
-//        // 3. Quick Actions
-//        val actions = listOf(
-//            "Add" to Icons.Default.Add,
-//            "Orders" to Icons.AutoMirrored.Filled.List,
-//            "Chat" to Icons.Default.AccountCircle,
-//            "Analytics" to Icons.Default.Home
-//        )
-//        LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-//            items(actions) { (label, icon) ->
-//                QuickActionButton(label = label, icon = icon) { /* onAction */ }
-//            }
-//        }
-//        Spacer(Modifier.height(24.dp))
-
-        // 4. Dashboard Grid
-//        Text("Farm Dashboard", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-//        LazyVerticalGrid(
-//            columns = GridCells.Fixed(2),
-//            horizontalArrangement = Arrangement.spacedBy(12.dp),
-//            verticalArrangement = Arrangement.spacedBy(12.dp),
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .height(200.dp)
-//        ) {
-//            items(dashboardItems) { DashboardItemCard(it) }
-//        }
-//        Spacer(Modifier.height(24.dp))
-
-//        // 5. Task List
-//        Text("Today's Tasks", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-//        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-//            items(taskItems) { TaskItemCard(it) }
-//        }
-//        Spacer(Modifier.height(24.dp))
-
-//        // 6. Tips Carousel
-//        Text("Farming Tips", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-//        LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.padding(top = 8.dp)) {
-//            items(3) { idx ->
-//                TipCard(tipNumber = idx+1, title = listOf("Water Conservation","Pest Management","Soil Health")[idx])
-//            }
-//        }
-//        Spacer(Modifier.height(80.dp))
-
-
-        // Greeting section with cute styling
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 12.dp),
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
-            ),
-           // elevation = CardDefaults.cardElevation(4.dp)
-        ) {
-            Row(
+            // 1. Search Bar
+            var query by remember { mutableStateOf("") }
+            Surface(
+                tonalElevation = 4.dp,
+                shape = RoundedCornerShape(24.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .height(56.dp)
             ) {
-                Column(
-                    modifier = Modifier.weight(1f)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(horizontal = 16.dp)
                 ) {
-                    Text(
-                        text = "Good Morning, 🌞",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-
-                    Text(
-                        text = "Farmer Korry!",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Text(
-                        text = "Perfect day for farming! Your crops are doing well.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                    Icon(Icons.Default.Search, contentDescription = "Search")
+                    Spacer(Modifier.width(8.dp))
+                    BasicTextField(
+                        value = query,
+                        onValueChange = { query = it },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(
+                            imeAction = ImeAction.Search,
+                            keyboardType = KeyboardType.Text
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onSearch = { /* handle search */ }
+                        ),
+                        decorationBox = { inner ->
+                            if (query.isEmpty()) Text("Search products, tasks…", color = Color.Gray)
+                            inner()
+                        },
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
+            }
+            Spacer(Modifier.height(16.dp))
 
-                // Weather indicator with cute style
-                Box(
+            // 2. Category Chips
+            val categories = listOf("Seeds", "Fertilizers", "Equipment", "Livestock")
+
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                items(categories) { cat ->
+                    CategoryChip(label = cat) { /* onCategorySelected(cat) */ }
+                }
+            }
+            Spacer(Modifier.height(16.dp))
+
+            // Greeting section with cute styling
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 12.dp),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
+                ),
+            ) {
+                val currentTime =
+                    Calendar.getInstance().get(Calendar.HOUR_OF_DAY) // same as modulus 24
+                val greeting = when (currentTime) {
+                    in 3..11 -> "Good Morning ☀️"
+                    in 12..15 -> "Good Afternoon 🌇"
+                    in 16..20 -> "Good Evening 🌆"
+                    else -> "Good Night 🌃"
+                }
+
+                Row(
                     modifier = Modifier
-                        .size(60.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
-                        .padding(8.dp),
-                    contentAlignment = Alignment.Center
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Weather icon (sun)
-                    Icon(
-                        painter = painterResource(id = R.drawable.sun),
-                        contentDescription = "Sunny",
-                        tint = Color(0xFFFFB74D),
-                        modifier = Modifier.size(40.dp)
+                    Column(
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(
+                            text = greeting,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+
+                        Text(
+                            text = userName,
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Text(
+                            text = "Perfect day for farming! Your crops are doing well.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                        )
+                    }
+
+                    // Weather indicator with cute style
+                    Box(
+                        modifier = Modifier
+                            .size(60.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
+                            .padding(8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        // Weather icon (sun)
+                        Icon(
+                            painter = painterResource(id = R.drawable.sun),
+                            contentDescription = "Sunny",
+                            tint = Color(0xFFFFB74D),
+                            modifier = Modifier.size(40.dp)
+                        )
+                    }
+                }
+            }
+
+            // Dashboard items in grid layout
+            Text(
+                text = "Farm Dashboard",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(vertical = 12.dp)
+            )
+
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                contentPadding = PaddingValues(vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(210.dp)
+            ) {
+                items(dashboardItems) { item ->
+                    DashboardItemCard(item)
+                }
+            }
+
+            // Task section with cute styling
+            Text(
+                text = "Today's Tasks",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(top = 20.dp, bottom = 12.dp)
+            )
+
+            taskItems.forEach { task ->
+                TaskItemCard(task)
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
+            // Tips section with cute styling
+            Text(
+                text = "Farming Tips",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(top = 20.dp, bottom = 12.dp)
+            )
+
+            // Scrollable tips cards
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp)
+            ) {
+                items(3) { index ->
+                    TipCard(
+                        tipNumber = index + 1,
+                        title = when (index) {
+                            0 -> "Water Conservation"
+                            1 -> "Pest Management"
+                            else -> "Soil Health"
+                        }
                     )
                 }
             }
+
+            // Bottom spacer for FAB clearance
+            Spacer(modifier = Modifier.height(80.dp))
         }
-
-        // Dashboard items in grid layout
-        Text(
-            text = "Farm Dashboard",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(vertical = 12.dp)
-        )
-
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            contentPadding = PaddingValues(vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(210.dp)
-        ) {
-            items(dashboardItems) { item ->
-                DashboardItemCard(item)
-            }
-        }
-
-        // Task section with cute styling
-        Text(
-            text = "Today's Tasks",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(top = 20.dp, bottom = 12.dp)
-        )
-
-        taskItems.forEach { task ->
-            TaskItemCard(task)
-            Spacer(modifier = Modifier.height(8.dp))
-        }
-
-        // Tips section with cute styling
-        Text(
-            text = "Farming Tips",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(top = 20.dp, bottom = 12.dp)
-        )
-
-        // Scrollable tips cards
-        LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp)
-        ) {
-            items(3) { index ->
-                TipCard(
-                    tipNumber = index + 1,
-                    title = when (index) {
-                        0 -> "Water Conservation"
-                        1 -> "Pest Management"
-                        else -> "Soil Health"
-                    }
-                )
-            }
-        }
-
-        // Bottom spacer for FAB clearance
-        Spacer(modifier = Modifier.height(80.dp))
     }
 }

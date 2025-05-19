@@ -1,4 +1,4 @@
-package dev.korryr.agrimarket.ui.features.home.presentatiosn
+package dev.korryr.agrimarket.appDrawer.presentation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -14,8 +14,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ExitToApp
 import androidx.compose.material.icons.rounded.AccountCircle
+import androidx.compose.material.icons.rounded.ExitToApp
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
@@ -35,13 +39,21 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import dev.korryr.agrimarket.ui.features.home.model.NavItem
+import com.google.firebase.auth.FirebaseAuth
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminDrawerContent(
     items: List<NavItem>,
-    onItemClick: (String) -> Unit
+    currentRoute: String,
+    onItemClick: (String) -> Unit,
+    onLoggedOut: () -> Unit
 ) {
+    val auth = FirebaseAuth.getInstance()
+    val user = auth.currentUser
+    val userName = user?.displayName ?: "Guest"
+
     var selectedItem by remember { mutableStateOf(items[0].route) }
 
     ModalDrawerSheet(
@@ -49,7 +61,7 @@ fun AdminDrawerContent(
         drawerContentColor = MaterialTheme.colorScheme.onSurface,
         windowInsets = WindowInsets.safeDrawing
     ) {
-        // Cute header design
+        // Cute header design // — header with avatar, name, role
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -96,7 +108,7 @@ fun AdminDrawerContent(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
-                    text = "Farmer Korry",
+                    text = userName,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onPrimary
@@ -148,6 +160,31 @@ fun AdminDrawerContent(
         }
 
         Spacer(modifier = Modifier.weight(1f))
+
+        HorizontalDivider()
+
+        //Spacer(modifier = Modifier.height(12.dp))
+
+        // Logout at bottom
+        NavigationDrawerItem(
+            icon = {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Rounded.ExitToApp,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error
+                    )
+                   },
+            label = {
+                Text(
+                    text = "Log Out",
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.error
+                ) },
+            selected = false,
+            onClick =  onLoggedOut,
+            modifier = Modifier.padding(vertical = 4.dp)
+        )
+
 
         // Cute admin version badge
         Box(
