@@ -37,7 +37,6 @@ fun TaskItemCard(task: TaskItem) {
             else
                 MaterialTheme.colorScheme.surface
         ),
-        elevation = CardDefaults.cardElevation(2.dp)
     ) {
         Row(
             modifier = Modifier

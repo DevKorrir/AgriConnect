@@ -38,7 +38,6 @@ fun TipCard(tipNumber: Int, title: String) {
         colors = CardDefaults.cardColors(
             containerColor = colors[tipNumber % colors.size].copy(alpha = 0.15f)
         ),
-        elevation = CardDefaults.cardElevation(2.dp)
     ) {
         Column(
             modifier = Modifier
