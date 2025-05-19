@@ -48,6 +48,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.auth
 import dev.korryr.agrimarket.R
 import dev.korryr.agrimarket.ui.features.home.model.DashboardItem
 import dev.korryr.agrimarket.ui.features.home.model.TaskItem
@@ -64,6 +67,9 @@ fun HomeContent(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues
 ) {
+    val auth = FirebaseAuth.getInstance()
+    val user = auth.currentUser
+    val userName = user?.displayName ?: "Guest"
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -152,7 +158,7 @@ fun HomeContent(
                     )
 
                     Text(
-                        text = "Farmer Korry!",
+                        text = userName,
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onPrimaryContainer
