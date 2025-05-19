@@ -1,5 +1,6 @@
 package dev.korryr.agrimarket.ui.features.home
 
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AccountCircle
@@ -22,6 +23,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import dev.korryr.agrimarket.ui.features.home.model.DashboardItem
 import dev.korryr.agrimarket.ui.features.home.model.NavItem
@@ -85,6 +87,17 @@ fun HomePage(
         }
     ) {
         Scaffold(
+                topBar = {
+                    CuteTopAppBar(
+                        title = "Agribuz Farm",
+                        onMenuClick = {
+                            scope.launch {
+                                if (drawerState.isClosed) drawerState.open() else drawerState.close()
+                            }
+                        },
+                        notificationCount = notificationCount
+                    )
+                },
 
             floatingActionButton = {
                 FloatingActionButton(
@@ -104,7 +117,7 @@ fun HomePage(
                 dashboardItems = dashboardItems,
                 taskItems = taskItems,
                 //modifier = Modifier.padding(paddingValues)
-                //contentPadding = paddingValues
+                contentPadding = paddingValues
             )
         }
     }

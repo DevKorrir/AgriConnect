@@ -61,12 +61,12 @@ fun HomeContent(
     dashboardItems: List<DashboardItem>,
     taskItems: List<TaskItem>,
     modifier: Modifier = Modifier,
-    //contentPadding: PaddingValues
+    contentPadding: PaddingValues
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            //.padding(contentPadding)
+            .padding(contentPadding)
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp)
     ) {

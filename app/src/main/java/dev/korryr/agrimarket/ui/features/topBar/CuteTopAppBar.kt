@@ -80,6 +80,7 @@ fun CuteTopAppBar(
         },
         actions = {
             BadgedBox(
+                modifier = Modifier.padding(end = 8.dp),
                 badge = {
                     if (notificationCount > 0) {
                         Badge { Text(text = notificationCount.toString()) }

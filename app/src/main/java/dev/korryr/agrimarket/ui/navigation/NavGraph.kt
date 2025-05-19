@@ -17,8 +17,13 @@ import dev.korryr.agrimarket.ui.features.auth.phoneAuth.register.AgribuzSignupSc
 import dev.korryr.agrimarket.ui.features.auth.phoneAuth.viewModel.AuthUiState
 import dev.korryr.agrimarket.ui.features.auth.phoneAuth.viewModel.AuthViewModel
 import dev.korryr.agrimarket.ui.features.auth.preferences.AuthPreferencesRepository
+import dev.korryr.agrimarket.ui.features.bottomNav.viewModel.BottomScreens
 import dev.korryr.agrimarket.ui.features.home.HomePage
+import dev.korryr.agrimarket.ui.features.market.view.MarketScreen
 import dev.korryr.agrimarket.ui.features.welcome.AgribuzWelcomeScreen
+import dev.korryr.agrimarket.ui.features.messages.view.MessageScreen
+import dev.korryr.agrimarket.ui.features.orders.view.OrderScreen
+import dev.korryr.agrimarket.ui.features.profile.view.ProfileScreen
 
 @Composable
 fun NavGraph(
@@ -39,7 +44,7 @@ fun NavGraph(
     //declare route
     val startRoute = when {
         isLoggedIn -> Screen.Home.route
-        else -> Screen.Welcome.route
+        else -> Screen.Home.route
     }
 
 
@@ -130,6 +135,19 @@ fun NavGraph(
 
         composable(Screen.Admin.route) {
             AdminPanel()
+        }
+
+        composable(BottomScreens.MarketPlace.route) {
+            MarketScreen()
+        }
+        composable(BottomScreens.Message.route) {
+            MessageScreen()
+        }
+        composable(BottomScreens.Orders.route) {
+            OrderScreen()
+        }
+        composable(BottomScreens.Profile.route) {
+            ProfileScreen()
         }
 
     }

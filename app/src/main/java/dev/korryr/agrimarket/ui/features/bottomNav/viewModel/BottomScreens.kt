@@ -8,19 +8,19 @@ import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Shop
 import androidx.compose.ui.graphics.vector.ImageVector
 
-sealed class Screen(
+sealed class BottomScreens(
     val route: String,
     val icon: ImageVector,
     val title: String
 ) {
-    object MarketPlace : Screen(
+    object Home : BottomScreens(
         route = "home",
         icon = Icons.Outlined.Home,
         title = "Home"
     )
 
-    object Education : Screen("market", Icons.Outlined.Shop, "Market")
-    object Orders : Screen("purchasing", Icons.AutoMirrored.Outlined.List, "Orders")
-    object Message: Screen("message", Icons.AutoMirrored.Outlined.Message, "Messages")
-    object Profile : Screen("account", Icons.Outlined.AccountCircle, "Profile")
+    object MarketPlace : BottomScreens("market", Icons.Outlined.Shop, "Market")
+    object Orders : BottomScreens("purchasing", Icons.AutoMirrored.Outlined.List, "Orders")
+    object Message: BottomScreens("message", Icons.AutoMirrored.Outlined.Message, "Messages")
+    object Profile : BottomScreens("account", Icons.Outlined.AccountCircle, "Profile")
 }

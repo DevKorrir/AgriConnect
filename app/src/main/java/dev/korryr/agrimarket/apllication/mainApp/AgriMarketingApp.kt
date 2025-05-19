@@ -5,7 +5,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -28,11 +27,10 @@ import androidx.compose.runtime.setValue
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
-import dev.korryr.agrimarket.ui.features.bottomNav.viewModel.Screen
-import dev.korryr.agrimarket.ui.features.topBar.CuteTopAppBar
-import kotlinx.coroutines.launch
+import dev.korryr.agrimarket.ui.features.bottomNav.viewModel.BottomScreens
+import dev.korryr.agrimarket.ui.navigation.Screen
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "RememberReturnType")
 @Composable
 fun AgriMarketingApp(
     modifier: Modifier = Modifier
@@ -46,25 +44,38 @@ fun AgriMarketingApp(
 
     // Selected item for bottom navigation
     var selectedNavItem by remember { mutableIntStateOf(0) }
+    val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
 
     // Notification count
     val notificationCount = 3
 
     val bottomItems = listOf(
-        //Screen.Sales,
-        Screen.MarketPlace,
-        Screen.Education,
-        Screen.Message,
-        Screen.Orders,
-        Screen.Profile
+       BottomScreens.Home,
+       // BottomScreens.MarketPlace,
+        BottomScreens.MarketPlace,
+        BottomScreens.Message,
+        BottomScreens.Orders,
+        BottomScreens.Profile
     )
+
+    val showBottomBarPages = setOf(
+        Screen.Home.route,
+        BottomScreens.MarketPlace.route,
+        BottomScreens.Message.route,
+        BottomScreens.Orders.route,
+        BottomScreens.Profile.route
+    )
+
+    val shouldShowBottomBar = remember(currentRoute) {
+        currentRoute?.let { it in showBottomBarPages } ?: false
+    }
 
 
     Scaffold (
         modifier = modifier.fillMaxSize(),
         bottomBar = {
             AnimatedVisibility(
-                visible = bottomBarState.value,
+                visible = shouldShowBottomBar, //bottomBarState.value,
                 enter = slideInVertically(initialOffsetY = { it }),
                 exit = slideOutVertically(targetOffsetY = { it }),
                 content = {
@@ -105,24 +116,12 @@ fun AgriMarketingApp(
                     }
                 }
             )
-        },
+        }
 
-
-        topBar = {
-            CuteTopAppBar(
-                title = "Agribuz Farm",
-                onMenuClick = {
-                    scope.launch {
-                        if (drawerState.isClosed) drawerState.open() else drawerState.close()
-                    }
-                },
-                notificationCount = notificationCount
-            )
-        },
 
     ) { padding ->
         NavGraph(
-            modifier = Modifier.padding(padding),
+            //modifier = Modifier.padding(padding),
             navController = navController
         )
    }
