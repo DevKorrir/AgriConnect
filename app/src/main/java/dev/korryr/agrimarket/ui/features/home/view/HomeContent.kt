@@ -1,5 +1,6 @@
 package dev.korryr.agrimarket.ui.features.home.view
 
+import android.icu.util.Calendar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -109,57 +110,13 @@ fun HomeContent(
 
         // 2. Category Chips
         val categories = listOf("Seeds", "Fertilizers", "Equipment", "Livestock")
+
         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             items(categories) { cat ->
                 CategoryChip(label = cat) { /* onCategorySelected(cat) */ }
             }
         }
         Spacer(Modifier.height(16.dp))
-
-//        // 3. Quick Actions
-//        val actions = listOf(
-//            "Add" to Icons.Default.Add,
-//            "Orders" to Icons.AutoMirrored.Filled.List,
-//            "Chat" to Icons.Default.AccountCircle,
-//            "Analytics" to Icons.Default.Home
-//        )
-//        LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-//            items(actions) { (label, icon) ->
-//                QuickActionButton(label = label, icon = icon) { /* onAction */ }
-//            }
-//        }
-//        Spacer(Modifier.height(24.dp))
-
-        // 4. Dashboard Grid
-//        Text("Farm Dashboard", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-//        LazyVerticalGrid(
-//            columns = GridCells.Fixed(2),
-//            horizontalArrangement = Arrangement.spacedBy(12.dp),
-//            verticalArrangement = Arrangement.spacedBy(12.dp),
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .height(200.dp)
-//        ) {
-//            items(dashboardItems) { DashboardItemCard(it) }
-//        }
-//        Spacer(Modifier.height(24.dp))
-
-//        // 5. Task List
-//        Text("Today's Tasks", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-//        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-//            items(taskItems) { TaskItemCard(it) }
-//        }
-//        Spacer(Modifier.height(24.dp))
-
-//        // 6. Tips Carousel
-//        Text("Farming Tips", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-//        LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.padding(top = 8.dp)) {
-//            items(3) { idx ->
-//                TipCard(tipNumber = idx+1, title = listOf("Water Conservation","Pest Management","Soil Health")[idx])
-//            }
-//        }
-//        Spacer(Modifier.height(80.dp))
-
 
         // Greeting section with cute styling
         Card(
@@ -170,8 +127,15 @@ fun HomeContent(
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
             ),
-           // elevation = CardDefaults.cardElevation(4.dp)
         ) {
+            val currentTime = Calendar.getInstance().get(Calendar.HOUR_OF_DAY) // same as modulus 24
+            val greeting = when (currentTime) {
+                in 3..11 -> "Good Morning ☀️"
+                in 12..15 -> "Good Afternoon 🌇"
+                in 16..20 -> "Good Evening 🌆"
+                else -> "Good Night 🌃"
+            }
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -182,7 +146,7 @@ fun HomeContent(
                     modifier = Modifier.weight(1f)
                 ) {
                     Text(
-                        text = "Good Morning, 🌞",
+                        text = greeting,
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
