@@ -13,12 +13,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import dev.korryr.agrimarket.R
 import dev.korryr.agrimarket.ui.features.farm.viewModel.FarmProfileUiState
 import dev.korryr.agrimarket.ui.features.farm.viewModel.FarmProfileViewModel
+import dev.korryr.agrimarket.ui.shareUI.AgribuzTextField
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,6 +37,9 @@ fun FarmProfileScreen(
     var description by remember { mutableStateOf("") }
     var contact by remember { mutableStateOf("") }
     var showErrors by remember { mutableStateOf(false) }
+
+    var nameError by remember { mutableStateOf("") }
+    var locationError by remember { mutableStateOf("") }
 
 
     // Populate local fields when profile is loaded
@@ -88,7 +93,7 @@ fun FarmProfileScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                //.padding(padding)
+                .padding(padding)
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -108,28 +113,56 @@ fun FarmProfileScreen(
             )
             Spacer(Modifier.height(24.dp))
 
-            OutlinedTextField(
+            AgribuzTextField(
                 value = name,
-                onValueChange = { name = it },
-                label = { Text("Farm Name") },
-                isError = showErrors && name.isBlank(),
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                modifier = Modifier.fillMaxWidth()
+                onValueChange = {
+                    name = it
+                    if (nameError.isNotEmpty()) nameError = ""
+                },
+                label = "Farm Name",
+                hint = "Koromosho Farm",
+                isPassword = false,
+                showPassword = false,
+                enabled = true,
+                readOnly = false,
+                error = nameError,
+                modifier = Modifier.fillMaxWidth(),
+                keyboardOptions = KeyboardOptions(
+                    capitalization = KeyboardCapitalization.Words,
+                    keyboardType = KeyboardType.Text,
+                    imeAction = ImeAction.Next
+                ),
             )
-            if (showErrors && name.isBlank()) Text("Required", color = MaterialTheme.colorScheme.error)
 
-            Spacer(Modifier.height(16.dp))
-            OutlinedTextField(
+            Spacer(Modifier.height(8.dp))
+
+            AgribuzTextField(
                 value = location,
-                onValueChange = { location = it },
-                label = { Text("Location") },
-                isError = showErrors && location.isBlank(),
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                modifier = Modifier.fillMaxWidth()
+                onValueChange = {
+                    location = it
+                    if (locationError.isNotEmpty()) locationError = ""
+                },
+                label = "Farm Location",
+                hint = "Iten",
+                enabled = true,
+                error = locationError,
+                modifier = Modifier.fillMaxSize(),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Text,
+                    imeAction = ImeAction.Next
+                ),
             )
-            if (showErrors && location.isBlank()) Text("Required", color = MaterialTheme.colorScheme.error)
+
+//            OutlinedTextField(
+//                value = location,
+//                onValueChange = { location = it },
+//                label = { Text("Location") },
+//                isError = showErrors && location.isBlank(),
+//                singleLine = true,
+//                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+//                modifier = Modifier.fillMaxWidth()
+//            )
+           // if (showErrors && location.isBlank()) Text("Required", color = MaterialTheme.colorScheme.error)
 
             Spacer(Modifier.height(16.dp))
             OutlinedTextField(
@@ -156,16 +189,20 @@ fun FarmProfileScreen(
             )
             if (showErrors && contact.isBlank()) Text("Required", color = MaterialTheme.colorScheme.error)
 
+            var isFarmFormValid by remember { mutableStateOf(false) }
+
             Spacer(Modifier.height(24.dp))
             Button(
                 onClick = {
                     showErrors = true
-                    if (name.isNotBlank() && location.isNotBlank() && description.isNotBlank() && contact.isNotBlank()) {
-                        farmViewModel.saveFarm(
-                            ownerId.takeIf { it.isNotBlank() },
-                            name, location, description, contact
-                        )
-                    }
+                    FarmValidation(
+                        name, location, description, contact,
+                        { nameErr -> nameError = nameErr },
+                        { locErr -> location = locErr },
+                        { descErr -> description = descErr },
+                        { contErr -> contact = contErr },
+                        setIsValid = { isValid -> isFarmFormValid = isValid },
+                    )
                 },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = uiState !is FarmProfileUiState.Saving || !(uiState as FarmProfileUiState.Saving).isSaving
@@ -185,5 +222,38 @@ fun FarmProfileScreen(
                 Text((uiState as FarmProfileUiState.Error).message, color = MaterialTheme.colorScheme.error)
             }
         }
+    }
+}
+
+private fun FarmValidation(
+    name: String,
+    location: String,
+    description: String,
+    contact: String,
+    setNameError: (String) -> Unit,
+    setLocationError: (String) -> Unit,
+    setDescriptionError: (String) -> Unit,
+    setContactError: (String) -> Unit,
+    setIsValid: (Boolean) -> Unit
+){
+    var isValid = true
+
+    //for famr name validation
+    if (name.isBlank()) {
+        setNameError("Name is required")
+        isValid = false
+    } else if (name.length < 3) {
+        setNameError("too short")
+        isValid = false
+    } else {
+        setNameError("")
+    }
+
+    //for location validation
+    if (location.isBlank()) {
+        setLocationError("Location is required")
+        isValid = false
+    } else {
+        setLocationError("")
     }
 }
