@@ -18,6 +18,7 @@ import dev.korryr.agrimarket.ui.features.auth.phoneAuth.viewModel.AuthUiState
 import dev.korryr.agrimarket.ui.features.auth.phoneAuth.viewModel.AuthViewModel
 import dev.korryr.agrimarket.ui.features.auth.preferences.AuthPreferencesRepository
 import dev.korryr.agrimarket.ui.features.bottomNav.viewModel.BottomScreens
+import dev.korryr.agrimarket.ui.features.farm.view.FarmProfileScreen
 import dev.korryr.agrimarket.ui.features.home.HomePage
 import dev.korryr.agrimarket.ui.features.market.view.MarketScreen
 import dev.korryr.agrimarket.ui.features.welcome.AgribuzWelcomeScreen
@@ -158,7 +159,8 @@ fun NavGraph(
             OrderScreen()
         }
         composable(BottomScreens.Profile.route) {
-            ProfileScreen()
+            //ProfileScreen()
+            FarmProfileScreen()
         }
 
     }
