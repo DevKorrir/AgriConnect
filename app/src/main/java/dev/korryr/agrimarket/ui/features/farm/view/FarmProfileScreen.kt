@@ -26,7 +26,7 @@ import dev.korryr.agrimarket.ui.shareUI.AgribuzTextField
 @Composable
 fun FarmProfileScreen(
     farmViewModel: FarmProfileViewModel = hiltViewModel(),
-    onSaved: () -> Unit = {}
+    onSaved: () -> Unit = {},
 ) {
     val uiState by farmViewModel.uiState.collectAsState()
 

@@ -1,6 +1,9 @@
 package dev.korryr.agrimarket.ui.features.home
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -31,7 +34,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.compose.rememberNavController
 import dev.korryr.agrimarket.appDrawer.presentation.AdminDrawerContent
 import dev.korryr.agrimarket.ui.features.auth.phoneAuth.viewModel.AuthViewModel
 import dev.korryr.agrimarket.ui.features.home.model.DashboardItem
@@ -46,8 +51,13 @@ import kotlinx.coroutines.launch
 fun HomePage(
     authViewModel: AuthViewModel = hiltViewModel(),
     onNavigate: (String) -> Unit = {},
-    onLoggedOut: () -> Unit = {}
+    onLoggedOut: () -> Unit = {},
+    scaffoldPadding: PaddingValues = PaddingValues()
 ) {
+    val navController = rememberNavController()
+
+
+
     // Drawer state
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -65,11 +75,11 @@ fun HomePage(
         NavItem("Marketplace", Icons.Rounded.ShoppingCart, route = "market"),
         NavItem("Orders", Icons.AutoMirrored.Rounded.List, route = "orders"),
         NavItem("Messages", Icons.AutoMirrored.Rounded.Message, route = "message"),
-        NavItem("Profile", Icons.Rounded.AccountCircle,    route = "profile"),
-        NavItem("Settings", Icons.Rounded.Settings,        route = "settings"),
+        NavItem("Profile", Icons.Rounded.AccountCircle, route = "profile"),
+        NavItem("Settings", Icons.Rounded.Settings, route = "settings"),
         // Admin-only
-        NavItem("User Management", Icons.Rounded.People,   route = "admin_users"),
-        NavItem("Reports", Icons.Rounded.Assessment,       route = "admin_reports")
+        NavItem("User Management", Icons.Rounded.People, route = "admin_users"),
+        NavItem("Reports", Icons.Rounded.Assessment, route = "admin_reports")
 
     )
 
@@ -89,10 +99,12 @@ fun HomePage(
         TaskItem("Harvest corn", "3 days", false)
     )
 
+
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            Column (
+            Column(
                 modifier = Modifier
                     .verticalScroll(rememberScrollState())
                     .fillMaxSize()
@@ -114,17 +126,19 @@ fun HomePage(
         }
     ) {
         Scaffold(
-                topBar = {
-                    CuteTopAppBar(
-                        title = "Agribuz Farm",
-                        onMenuClick = {
-                            scope.launch {
-                                if (drawerState.isClosed) drawerState.open() else drawerState.close()
-                            }
-                        },
-                        notificationCount = notificationCount
-                    )
-                },
+            topBar = {
+                CuteTopAppBar(
+                    title = "Agribuz Farm",
+                    onMenuClick = {
+                        scope.launch {
+                            if (drawerState.isClosed) drawerState.open() else drawerState.close()
+                        }
+                    },
+                    notificationCount = notificationCount
+                )
+            },
+
+
 
             floatingActionButton = {
                 FloatingActionButton(
@@ -139,13 +153,27 @@ fun HomePage(
                     )
                 }
             }
-        ) { paddingValues ->
+        ) { innerPaddingValues ->
+
+            val combinedPadding = PaddingValues(
+                top = innerPaddingValues.calculateTopPadding(),
+//                bottom = max(
+//                    innerPaddingValues.calculateBottomPadding(),
+//                    scaffoldPadding.calculateBottomPadding()
+//                ),
+                start = innerPaddingValues.calculateStartPadding(
+                    LocalLayoutDirection.current
+                ),
+                end = innerPaddingValues.calculateEndPadding(LocalLayoutDirection.current)
+
+            )
             HomeContent(
                 dashboardItems = dashboardItems,
                 taskItems = taskItems,
-                //modifier = Modifier.padding(paddingValues)
-                contentPadding = paddingValues
+                //modifier = Modifier.padding(innerPaddingValues),
+                contentPadding = combinedPadding
             )
         }
     }
 }
+//crtl alt l

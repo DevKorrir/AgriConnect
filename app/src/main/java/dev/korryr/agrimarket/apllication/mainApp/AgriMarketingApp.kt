@@ -35,7 +35,7 @@ import dev.korryr.agrimarket.ui.navigation.Screen
 fun AgriMarketingApp(
     modifier: Modifier = Modifier
 ){
-    val navController = rememberNavController()
+
     val bottomBarState = rememberSaveable { mutableStateOf(true) }
 
     // Drawer state
@@ -44,85 +44,21 @@ fun AgriMarketingApp(
 
     // Selected item for bottom navigation
     var selectedNavItem by remember { mutableIntStateOf(0) }
-    val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
+
 
     // Notification count
     val notificationCount = 3
 
-    val bottomItems = listOf(
-       BottomScreens.Home,
-        BottomScreens.MarketPlace,
-        BottomScreens.Message,
-        BottomScreens.Orders,
-        BottomScreens.Profile
-    )
 
-    val showBottomBarPages = setOf(
-        Screen.Home.route,
-        BottomScreens.MarketPlace.route,
-        BottomScreens.Message.route,
-        BottomScreens.Orders.route,
-        BottomScreens.Profile.route
-    )
-
-    val shouldShowBottomBar = remember(currentRoute) {
-        currentRoute?.let { it in showBottomBarPages } ?: false
-    }
 
 
     Scaffold (
         modifier = modifier.fillMaxSize(),
-        bottomBar = {
-            AnimatedVisibility(
-                visible = shouldShowBottomBar, //bottomBarState.value,
-                enter = slideInVertically(initialOffsetY = { it }),
-                exit = slideOutVertically(targetOffsetY = { it }),
-                content = {
-                    NavigationBar(
-                        containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.95f),
-                        tonalElevation = 8.dp
-                    ){
-                        val navBackStackEntry by navController.currentBackStackEntryAsState()
-                        val currentDestination = navBackStackEntry?.destination
-
-                        bottomItems.forEach { screen ->
-                            val selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true
-
-                            NavigationBarItem(
-                                selected = selected,
-                                onClick = { navController.navigate(screen.route) },
-                                icon = {
-                                    Icon(
-                                        imageVector = screen.icon,
-                                        contentDescription = screen.title,
-                                        tint = if (selected)
-                                            MaterialTheme.colorScheme.primary
-                                        else
-                                            MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                },
-                                label = {
-                                    Text(
-                                        text = screen.title,
-                                        color = if (selected)
-                                            MaterialTheme.colorScheme.primary
-                                        else
-                                            MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                },
-                            )
-                        }
-                    }
-                }
-            )
-        }
 
 
-    ) { padding ->
-        NavGraph(
-            //modifier = Modifier.padding(padding),
-            navController = navController
-        )
+
+    ) {  paddingValues ->
+
    }
 
 }
