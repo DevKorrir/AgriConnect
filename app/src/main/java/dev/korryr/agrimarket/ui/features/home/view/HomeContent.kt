@@ -94,8 +94,8 @@ fun HomeContent(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(contentPadding)
                 .verticalScroll(rememberScrollState())
+                .padding(contentPadding)
                 .padding(horizontal = 16.dp)
         ) {
 
