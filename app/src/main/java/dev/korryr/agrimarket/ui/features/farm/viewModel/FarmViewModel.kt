@@ -28,6 +28,9 @@ class FarmProfileViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<FarmProfileUiState>(FarmProfileUiState.Loading)
     val uiState: StateFlow<FarmProfileUiState> = _uiState
 
+    private val _isSaved = MutableStateFlow(false)
+    val isSaved: StateFlow<Boolean> = _isSaved
+
     /** Load existing farm or null */
     fun loadFarm(ownerUid: String) {
         _uiState.value = FarmProfileUiState.Loading
@@ -41,26 +44,38 @@ class FarmProfileViewModel @Inject constructor(
         }
     }
 
-    /** Create or update farm */
-    fun saveFarm(
-        ownerUid: String?,
+    fun saveFarmProfile(
         farmName: String,
         location: String,
-        description: String,
-        contact: String
+        typeOfFarming: String,
+        contactInfo: String,
     ) {
-        _uiState.value = FarmProfileUiState.Saving(isSaving = true)
         viewModelScope.launch {
+            _uiState.value = FarmProfileUiState.Saving(true)
             try {
-                    val id = ownerUid ?: auth.currentUser!!.uid
-                    val farm = FarmProfile(id, farmName, location, description, contact)
-                    repo.saveFarm(farm)   // repo handles create vs. update under-the-hood
-                    _uiState.value = FarmProfileUiState.Success(farm)
-                    _uiState.value = FarmProfileUiState.Saving(false)
-                } catch (e: Exception) {
+                val ownerUid = auth.currentUser?.uid ?: throw Exception("User not Logged in")
+                val farm = FarmProfile(
+                    farmId = ownerUid, //or you can generete uuid or use auto generfete key
+                    ownerUid = ownerUid,
+                    farmName = farmName,
+                    location = location,
+                    typeOfFarming = typeOfFarming,
+                    contact = contactInfo
+                )
+                repo.saveFarm(farm)
+                _uiState.value = FarmProfileUiState.Success(farm)
+                _uiState.value = FarmProfileUiState.Saving(false)
+                _isSaved.value = true // ✅ Trigger navigation
+            } catch (e: Exception) {
                 _uiState.value = FarmProfileUiState.Error(e.localizedMessage ?: "Save failed")
+                _uiState.value = FarmProfileUiState.Saving(false)
             }
-
         }
     }
+
+    fun resetSavedFlag(){
+        _isSaved.value = false
+    }
+
+
 }

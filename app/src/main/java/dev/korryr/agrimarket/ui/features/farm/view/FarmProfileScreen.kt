@@ -1,23 +1,24 @@
 package dev.korryr.agrimarket.ui.features.farm.view
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Agriculture
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import dev.korryr.agrimarket.R
 import dev.korryr.agrimarket.ui.features.farm.viewModel.FarmProfileUiState
 import dev.korryr.agrimarket.ui.features.farm.viewModel.FarmProfileViewModel
 import dev.korryr.agrimarket.ui.shareUI.AgribuzTextField
@@ -27,233 +28,381 @@ import dev.korryr.agrimarket.ui.shareUI.AgribuzTextField
 fun FarmProfileScreen(
     farmViewModel: FarmProfileViewModel = hiltViewModel(),
     onSaved: () -> Unit = {},
+    onBackPressed: () -> Unit = {}
 ) {
     val uiState by farmViewModel.uiState.collectAsState()
+    val isSaved by farmViewModel.isSaved.collectAsState()
+    val state = uiState
 
-    // Local UI fields, initialized from state.profile when first loaded
-    var ownerId by remember { mutableStateOf("") }
-    var name by remember { mutableStateOf("") }
+    // Form state
+    var farmName by remember { mutableStateOf("") }
     var location by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
+    var farmingType by remember { mutableStateOf("") }
     var contact by remember { mutableStateOf("") }
     var showErrors by remember { mutableStateOf(false) }
 
-    var nameError by remember { mutableStateOf("") }
+    // Error states
+    var farmNameError by remember { mutableStateOf("") }
     var locationError by remember { mutableStateOf("") }
+    var contactError by remember { mutableStateOf("") }
 
+    val isLoading = uiState is FarmProfileUiState.Saving
 
-    // Populate local fields when profile is loaded
-    // Populate local fields when profile is loaded
+    // Farming type options
+    val farmingTypes = listOf(
+        "Crop Farming",
+        "Livestock",
+        "Poultry",
+        "Horticulture",
+        "Mixed Farming",
+        "Organic Farming",
+        "Aquaculture",
+        "Dairy Farming"
+    )
+
+    // Populate fields when profile is loaded
     LaunchedEffect(uiState) {
-        if (uiState is FarmProfileUiState.Success) {
-            (uiState as FarmProfileUiState.Success).profile?.let { profile ->
-                ownerId    = profile.ownerUid    // ← add this
-                name       = profile.farmName
-                location   = profile.location
-                description= profile.description
-                contact    = profile.contactInfo
+        val currentUiState = uiState //capture for smart cast withiin lauch efffect
+        if (currentUiState is FarmProfileUiState.Success) {
+            currentUiState.profile?.let { profile ->
+                farmName = profile.farmName
+                location = profile.location
+                farmingType = profile.typeOfFarming ?: ""
+                contact = profile.contact
             }
         }
     }
 
-    // React to save success - This part might need adjustment based on how you signal save
-    // For instance, you might introduce a new state like 'Saved' or use a separate Flow/State for it.
-    // Let's assume for now your 'Saving' state eventually transitions to 'Success' or 'Error'.
-    // Or perhaps you have a separate event/flag for "isSaved".
-    // If FarmProfileViewModel updates uiState to Success after saving, this might be okay.
-    // However, it's often better to have a more explicit signal for "saved".
-
-    // For example, if 'Saving' state with isSaving=false means saved:
-    LaunchedEffect(uiState) {
-        if (uiState is FarmProfileUiState.Saving && !(uiState as FarmProfileUiState.Saving).isSaving) {
-            // This is a guess. The condition for "isSaved" depends on your ViewModel logic.
-            // A dedicated 'Saved' state or a separate Flow<Boolean> for save status is cleaner.
+    // Handle save success
+    LaunchedEffect(isSaved) {
+        if (isSaved) {
             onSaved()
+            farmViewModel.resetSavedFlag()
         }
     }
-
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
+                    val capturedUiState = uiState
                     Text(
-                        // Adjust title based on whether a profile exists in the Success state
-                        if (uiState is FarmProfileUiState.Success && (uiState as FarmProfileUiState.Success).profile != null) {
-                            "Edit Farm"
+                        text = if (capturedUiState is FarmProfileUiState.Success && capturedUiState.profile != null) {
+                            "Edit Farm Profile"
                         } else {
-                            "Create Farm"
-                        }
+                            "Create Farm Profile"
+                        },
+                        fontWeight = FontWeight.Medium
                     )
-                }
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBackPressed) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
             )
         }
-    ) { padding ->
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(padding)
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(paddingValues)
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Image(
-                painter = painterResource(R.drawable.cabbage_backgroud),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(120.dp)
-                    .background(
-                        Brush.linearGradient(
-                            listOf(
-                                MaterialTheme.colorScheme.primary,
-                                MaterialTheme.colorScheme.secondary
-                            )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Header Section
+            FarmProfileHeader()
+
+            // Form Section
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    // Farm Name Field
+                    AgribuzTextField(
+                        value = farmName,
+                        onValueChange = {
+                            farmName = it
+                            farmNameError = ""
+                        },
+                        label = "Farm Name",
+                        hint = "Enter your farm name",
+                        error = farmNameError,
+                        modifier = Modifier.fillMaxWidth(),
+                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                            capitalization = KeyboardCapitalization.Words,
+                            keyboardType = KeyboardType.Text,
+                            imeAction = ImeAction.Next
                         )
                     )
-            )
-            Spacer(Modifier.height(24.dp))
 
-            AgribuzTextField(
-                value = name,
-                onValueChange = {
-                    name = it
-                    if (nameError.isNotEmpty()) nameError = ""
-                },
-                label = "Farm Name",
-                hint = "Koromosho Farm",
-                isPassword = false,
-                showPassword = false,
-                enabled = true,
-                readOnly = false,
-                error = nameError,
-                modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(
-                    capitalization = KeyboardCapitalization.Words,
-                    keyboardType = KeyboardType.Text,
-                    imeAction = ImeAction.Next
-                ),
-            )
-
-            Spacer(Modifier.height(8.dp))
-
-            AgribuzTextField(
-                value = location,
-                onValueChange = {
-                    location = it
-                    if (locationError.isNotEmpty()) locationError = ""
-                },
-                label = "Farm Location",
-                hint = "Iten",
-                enabled = true,
-                error = locationError,
-                modifier = Modifier.fillMaxSize(),
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Text,
-                    imeAction = ImeAction.Next
-                ),
-            )
-
-//            OutlinedTextField(
-//                value = location,
-//                onValueChange = { location = it },
-//                label = { Text("Location") },
-//                isError = showErrors && location.isBlank(),
-//                singleLine = true,
-//                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-//                modifier = Modifier.fillMaxWidth()
-//            )
-           // if (showErrors && location.isBlank()) Text("Required", color = MaterialTheme.colorScheme.error)
-
-            Spacer(Modifier.height(16.dp))
-            OutlinedTextField(
-                value = description,
-                onValueChange = { description = it },
-                label = { Text("Description") },
-                isError = showErrors && description.isBlank(),
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(120.dp)
-            )
-            if (showErrors && description.isBlank()) Text("Required", color = MaterialTheme.colorScheme.error)
-
-            Spacer(Modifier.height(16.dp))
-            OutlinedTextField(
-                value = contact,
-                onValueChange = { contact = it },
-                label = { Text("Contact Info") },
-                isError = showErrors && contact.isBlank(),
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone, imeAction = ImeAction.Done),
-                modifier = Modifier.fillMaxWidth()
-            )
-            if (showErrors && contact.isBlank()) Text("Required", color = MaterialTheme.colorScheme.error)
-
-            var isFarmFormValid by remember { mutableStateOf(false) }
-
-            Spacer(Modifier.height(24.dp))
-            Button(
-                onClick = {
-                    showErrors = true
-                    FarmValidation(
-                        name, location, description, contact,
-                        { nameErr -> nameError = nameErr },
-                        { locErr -> location = locErr },
-                        { descErr -> description = descErr },
-                        { contErr -> contact = contErr },
-                        setIsValid = { isValid -> isFarmFormValid = isValid },
+                    // Location Field
+                    AgribuzTextField(
+                        value = location,
+                        onValueChange = {
+                            location = it
+                            locationError = ""
+                        },
+                        label = "Farm Location",
+                        hint = "Enter farm location",
+                        error = locationError,
+                        modifier = Modifier.fillMaxWidth(),
+                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                            capitalization = KeyboardCapitalization.Sentences,
+                            keyboardType = KeyboardType.Text,
+                            imeAction = ImeAction.Next
+                        )
                     )
-                },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = uiState !is FarmProfileUiState.Saving || !(uiState as FarmProfileUiState.Saving).isSaving
-            ) {
-                if (uiState is FarmProfileUiState.Saving && (uiState as FarmProfileUiState.Saving).isSaving) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        color = MaterialTheme.colorScheme.onPrimary
+
+                    // Farming Type Section
+                    FarmingTypeSelector(
+                        selectedType = farmingType,
+                        onTypeSelected = { farmingType = it },
+                        farmingTypes = farmingTypes
                     )
-                } else {
-                    Text("Save Farm")
+
+                    // Contact Field
+                    AgribuzTextField(
+                        value = contact,
+                        onValueChange = {
+                            contact = it
+                            contactError = ""
+                        },
+                        label = "Contact Information",
+                        hint = "Phone number or email",
+                        error = contactError,
+                        modifier = Modifier.fillMaxWidth(),
+                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                            keyboardType = KeyboardType.Phone,
+                            imeAction = ImeAction.Done
+                        )
+                    )
                 }
             }
 
-            if (uiState is FarmProfileUiState.Error) {
-                Spacer(Modifier.height(8.dp))
-                Text((uiState as FarmProfileUiState.Error).message, color = MaterialTheme.colorScheme.error)
+            // Error Message
+            if (state is FarmProfileUiState.Error) {
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer
+                    )
+                ) {
+
+                    Text(
+                        text = state.message,
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+            }
+
+            // Save Button
+            Button(
+                onClick = {
+                    showErrors = true
+                    validateAndSave(
+                        farmName = farmName,
+                        location = location,
+                        farmingType = farmingType,
+                        contact = contact,
+                        setFarmNameError = { farmNameError = it ?: ""},
+                        setLocationError = { locationError = it ?: ""},
+                        setContactError = { contactError = it ?: ""},
+                        onValidationSuccess = {
+                            farmViewModel.saveFarmProfile(
+                                farmName = farmName,
+                                location = location,
+                                typeOfFarming = farmingType,
+                                contactInfo = contact
+                            )
+                        }
+                    )
+                },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !isLoading
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        strokeWidth = 2.dp
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Saving...")
+                } else {
+                    Text(
+                        text = if (state is FarmProfileUiState.Success && state.profile != null) {
+                            "Update Farm"
+                        } else {
+                            "Save Farm"
+                        }
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+    }
+}
+
+@Composable
+private fun FarmProfileHeader() {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Card(
+            modifier = Modifier.size(80.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer
+            )
+        ) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Agriculture,
+                    contentDescription = null,
+                    modifier = Modifier.size(40.dp),
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = "Farm Information",
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold
+        )
+
+        Text(
+            text = "Please provide your farm details",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Composable
+private fun FarmingTypeSelector(
+    selectedType: String,
+    onTypeSelected: (String) -> Unit,
+    farmingTypes: List<String>
+) {
+    Column {
+        Text(
+            text = "Type of Farming",
+            style = MaterialTheme.typography.bodyLarge,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Card(
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+            )
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .selectableGroup()
+                    .padding(8.dp)
+            ) {
+                farmingTypes.forEach { type ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .selectable(
+                                selected = selectedType == type,
+                                onClick = { onTypeSelected(type) },
+                                role = Role.RadioButton
+                            )
+                            .padding(vertical = 8.dp, horizontal = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(
+                            selected = selectedType == type,
+                            onClick = null
+                        )
+
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        Text(
+                            text = type,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
             }
         }
     }
 }
 
-private fun FarmValidation(
-    name: String,
+private fun validateAndSave(
+    farmName: String,
     location: String,
-    description: String,
+    farmingType: String,
     contact: String,
-    setNameError: (String) -> Unit,
-    setLocationError: (String) -> Unit,
-    setDescriptionError: (String) -> Unit,
-    setContactError: (String) -> Unit,
-    setIsValid: (Boolean) -> Unit
-){
+    setFarmNameError: (String?) -> Unit,
+    setLocationError: (String?) -> Unit,
+    setContactError: (String?) -> Unit,
+    onValidationSuccess: () -> Unit
+) {
     var isValid = true
 
-    //for famr name validation
-    if (name.isBlank()) {
-        setNameError("Name is required")
-        isValid = false
-    } else if (name.length < 3) {
-        setNameError("too short")
-        isValid = false
-    } else {
-        setNameError("")
+    // Validate farm name
+    when {
+        farmName.isBlank() -> {
+            setFarmNameError("Farm name is required")
+            isValid = false
+        }
+        farmName.length < 3 -> {
+            setFarmNameError("Farm name must be at least 3 characters")
+            isValid = false
+        }
+        else -> setFarmNameError(null)
     }
 
-    //for location validation
+    // Validate location
     if (location.isBlank()) {
         setLocationError("Location is required")
         isValid = false
     } else {
-        setLocationError("")
+        setLocationError(null)
+    }
+
+    // Validate contact
+    when {
+        contact.isBlank() -> {
+            setContactError("Contact information is required")
+            isValid = false
+        }
+        contact.length < 10 -> {
+            setContactError("Please enter a valid contact number")
+            isValid = false
+        }
+        else -> setContactError(null)
+    }
+
+    if (isValid) {
+        onValidationSuccess()
     }
 }

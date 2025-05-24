@@ -5,13 +5,9 @@ data class FarmProfile(
   val ownerUid: String = "",
   val farmName: String = "",
   val location: String = "",
-  val description: String = "",
-  val contactInfo: String = ""
+  val typeOfFarming: String = "",
+  val contact: String = "",
+  val createdAt: Long = System.currentTimeMillis()
 )
 
-//data class FarmProfileUiState(
-//  val profile: FarmProfile? = null,
-//  val isSaving: Boolean = false,
-//  val errorMessage: String? = null
-//)
 
