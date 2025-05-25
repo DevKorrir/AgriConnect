@@ -65,7 +65,8 @@ fun CreateEditFarmContent(
     var farmNameError by remember { mutableStateOf("") }
     var locationError by remember { mutableStateOf("") }
     var contactError by remember { mutableStateOf("") }
-    var farmingTypeError by remember { mutableStateOf("") }
+   // var farmingTypeError by remember { mutableStateOf("") }
+    var farmingTypeError by remember { mutableStateOf<String?>(null) }
 
     val isLoading = uiState is FarmProfileUiState.Saving
 
@@ -228,7 +229,7 @@ fun CreateEditFarmContent(
                         setFarmNameError = { farmNameError = it ?: "" },
                         setLocationError = { locationError = it ?: "" },
                         setContactError = { contactError = it ?: "" },
-                        setFarmingTypeError = { farmingTypeError = it ?: "" },
+                        setFarmingTypeError = { farmingTypeError = it  },
                         onValidationSuccess = {
                             farmViewModel.saveFarmProfile(
                                 farmName = farmName,
