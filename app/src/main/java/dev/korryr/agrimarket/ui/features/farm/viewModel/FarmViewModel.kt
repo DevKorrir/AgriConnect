@@ -30,6 +30,11 @@ class FarmProfileViewModel @Inject constructor(
     private val _isSaved = MutableStateFlow(false)
     val isSaved: StateFlow<Boolean> = _isSaved
 
+    init {
+        // As soon as ViewModel is created, try to load existing farm
+        auth.currentUser?.uid?.let { loadFarm(it) }
+    }
+
     /** Load existing farm or null */
     fun loadFarm(ownerUid: String) {
         _uiState.value = FarmProfileUiState.Loading

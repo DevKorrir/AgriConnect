@@ -84,18 +84,28 @@ fun FarmProfileScreen(
 
     var isEditMode by remember { mutableStateOf(false) }
 
-    // Determine if farmer has existing profile
-    val hasExistingFarm = when (
-        val currentState = uiState
-    ) {
-        is FarmProfileUiState.Success -> currentState.profile != null
-        else -> false
-    }
+//    // Determine if farmer has existing profile
+//    val hasExistingFarm = when (
+//        val currentState = uiState
+//    ) {
+//        is FarmProfileUiState.Success -> currentState.profile != null
+//        else -> false
+//    }
 
-    // Handle save success
+    // Determine if there’s an existing farm
+    val hasExistingFarm = (uiState as? FarmProfileUiState.Success)?.profile != null
+
+//    // Handle save success
+//    LaunchedEffect(isSaved) {
+//        if (isSaved) {
+//            isEditMode = false
+//            farmViewModel.resetSavedFlag()
+//        }
+//    }
+
+    // Switch off edit mode once saved
     LaunchedEffect(isSaved) {
         if (isSaved) {
-            isEditMode = false
             farmViewModel.resetSavedFlag()
         }
     }
