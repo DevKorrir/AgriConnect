@@ -267,16 +267,14 @@ fun NavGraph(
             }
 
             composable(BottomScreens.Profile.route) {
-                //ProfileScreen()
-                Box(
-                    //modifier = Modifier.padding(scaffoldPadding)
-                ) {
-                    FarmProfileScreen(
-                        onBackPressed = {
-                            navController.navigateUp()
-                        }
-                    )
-                }
+                FarmProfileScreen(
+                    onBackPressed = {
+                        navController.navigateUp()
+                    },
+                    onNavigateToPostScreen = {
+                        navController.navigate(Screen.Post.route)
+                    }
+                )
 
             }
 

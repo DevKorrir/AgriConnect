@@ -49,7 +49,8 @@ fun FarmDashboardContent(
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -57,11 +58,11 @@ fun FarmDashboardContent(
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
-                .size(150.dp)
+                .size(100.dp)
                 .clip(CircleShape)
                 .fillMaxWidth()
                 .clickable { onEdit() }
-                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
         ) {
             Image(
                 painter = rememberAsyncImagePainter(
@@ -71,7 +72,7 @@ fun FarmDashboardContent(
                 contentDescription = "Farm Profile Image",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .size(100.dp)
+                    .size(50.dp)
                     .clip(CircleShape)
                     .clickable { /* TODO: open image picker */ }
             )

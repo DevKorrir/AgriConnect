@@ -1,5 +1,6 @@
 package dev.korryr.agrimarket.ui.features.farm.view
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -42,6 +43,7 @@ fun FarmProfileScreen(
 ) {
     val uiState by farmViewModel.uiState.collectAsState()
     val isSaved by farmViewModel.isSaved.collectAsState()
+    val scaffold  = PaddingValues()
 
     var isEditMode by remember { mutableStateOf(false) }
 
@@ -127,7 +129,7 @@ fun FarmProfileScreen(
                     )
                 } else {
                     CreateEditFarmContent(
-                        modifier = Modifier.padding(paddingValues),
+                        modifier = Modifier.padding(paddingValues ),
                         uiState = uiState,
                         farmViewModel = farmViewModel,
                         isEditMode = isEditMode,
@@ -144,7 +146,7 @@ fun FarmProfileScreen(
                     uiState = uiState,
                     farmViewModel = farmViewModel,
                     isEditMode = isEditMode,
-                    existingProfile = if (hasExistingFarm) (uiState as FarmProfileUiState.Success).profile else null,
+                    existingProfile = null,
                     onCancelEdit = { isEditMode = false }
                 )
             }

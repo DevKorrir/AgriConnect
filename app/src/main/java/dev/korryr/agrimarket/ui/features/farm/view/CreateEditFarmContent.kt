@@ -65,6 +65,7 @@ fun CreateEditFarmContent(
     var farmNameError by remember { mutableStateOf("") }
     var locationError by remember { mutableStateOf("") }
     var contactError by remember { mutableStateOf("") }
+    var farmingTypeError by remember { mutableStateOf("") }
 
     val isLoading = uiState is FarmProfileUiState.Saving
 
@@ -227,6 +228,7 @@ fun CreateEditFarmContent(
                         setFarmNameError = { farmNameError = it ?: "" },
                         setLocationError = { locationError = it ?: "" },
                         setContactError = { contactError = it ?: "" },
+                        setFarmingTypeError = { farmingTypeError = it ?: "" },
                         onValidationSuccess = {
                             farmViewModel.saveFarmProfile(
                                 farmName = farmName,
@@ -234,7 +236,7 @@ fun CreateEditFarmContent(
                                 typeOfFarming = farmingType,
                                 contactInfo = contact
                             )
-                        }
+                        },
                     )
                 },
                 modifier = if (isEditMode) Modifier.weight(1f) else Modifier.fillMaxWidth(),
@@ -268,6 +270,7 @@ private fun validateAndSave(
     contact: String,
     setFarmNameError: (String?) -> Unit,
     setLocationError: (String?) -> Unit,
+    setFarmingTypeError: (String?) -> Unit,
     setContactError: (String?) -> Unit,
     onValidationSuccess: () -> Unit
 ) {
@@ -294,6 +297,14 @@ private fun validateAndSave(
         isValid = false
     } else {
         setLocationError(null)
+    }
+
+    //validate farming type its aradio
+    if (farmingType.isBlank()) {
+        setFarmingTypeError("Please select the farm type")
+        isValid = false
+    } else {
+        setFarmingTypeError(null)
     }
 
     // Validate contact
