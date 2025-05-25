@@ -272,9 +272,6 @@ fun NavGraph(
                     //modifier = Modifier.padding(scaffoldPadding)
                 ) {
                     FarmProfileScreen(
-                        onNavigateToPostScreen = {
-                            navController.navigate(Screen.Post.route)
-                        },
                         onBackPressed = {
                             navController.navigateUp()
                         }
