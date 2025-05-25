@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.korryr.agrimarket.ui.features.farm.data.model.FarmProfile
-import dev.korryr.agrimarket.ui.features.farm.data.repo.FarmRepository
 import dev.korryr.agrimarket.ui.features.farm.data.repo.FarmRepositoryImpl
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -73,7 +72,7 @@ class FarmProfileViewModel @Inject constructor(
         }
     }
 
-    fun resetSavedFlag(){
+    fun resetSavedFlag() {
         _isSaved.value = false
     }
 

@@ -8,6 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -33,11 +34,11 @@ fun FarmProfileScreen(
     val state = uiState
 
     // Form state
-    var farmName by remember { mutableStateOf("") }
-    var location by remember { mutableStateOf("") }
-    var farmingType by remember { mutableStateOf("") }
-    var contact by remember { mutableStateOf("") }
-    var showErrors by remember { mutableStateOf(false) }
+    var farmName by rememberSaveable { mutableStateOf("") }
+    var location by rememberSaveable { mutableStateOf("") }
+    var farmingType by rememberSaveable { mutableStateOf("") }
+    var contact by rememberSaveable { mutableStateOf("") }
+    var showErrors by rememberSaveable { mutableStateOf(false) }
 
     // Error states
     var farmNameError by remember { mutableStateOf("") }
@@ -122,6 +123,9 @@ fun FarmProfileScreen(
 
             // Form Section
             Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                ),
                 modifier = Modifier.fillMaxWidth(),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
@@ -129,6 +133,7 @@ fun FarmProfileScreen(
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
+
                     // Farm Name Field
                     AgribuzTextField(
                         value = farmName,
@@ -140,7 +145,7 @@ fun FarmProfileScreen(
                         hint = "Enter your farm name",
                         error = farmNameError,
                         modifier = Modifier.fillMaxWidth(),
-                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                        keyboardOptions = KeyboardOptions(
                             capitalization = KeyboardCapitalization.Words,
                             keyboardType = KeyboardType.Text,
                             imeAction = ImeAction.Next
