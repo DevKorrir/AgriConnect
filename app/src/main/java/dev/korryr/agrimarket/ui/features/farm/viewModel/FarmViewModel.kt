@@ -66,10 +66,16 @@ class FarmProfileViewModel @Inject constructor(
                     typeOfFarming = typeOfFarming,
                     contact = contactInfo
                 )
+                //save to firestore
                 repo.saveFarm(farm)
-                _uiState.value = FarmProfileUiState.Success(farm)
-                _uiState.value = FarmProfileUiState.Saving(false)
+
+                // load the saved farm from firestore
+                val savedFarm = repo.getFarmByOwner(ownerUid)
+
+                _uiState.value = FarmProfileUiState.Success(savedFarm)
+                //_uiState.value = FarmProfileUiState.Saving(false)
                 _isSaved.value = true // ✅ Trigger navigation
+
             } catch (e: Exception) {
                 _uiState.value = FarmProfileUiState.Error(e.localizedMessage ?: "Save failed")
                 _uiState.value = FarmProfileUiState.Saving(false)

@@ -80,32 +80,22 @@ fun FarmProfileScreen(
 ) {
     val uiState by farmViewModel.uiState.collectAsState()
     val isSaved by farmViewModel.isSaved.collectAsState()
-    val state = uiState
 
     var isEditMode by remember { mutableStateOf(false) }
 
-//    // Determine if farmer has existing profile
-//    val hasExistingFarm = when (
-//        val currentState = uiState
-//    ) {
-//        is FarmProfileUiState.Success -> currentState.profile != null
-//        else -> false
-//    }
+    // Determine if farmer has existing profile
+    val hasExistingFarm = when (
+        val currentState = uiState
+    ) {
+        is FarmProfileUiState.Success -> currentState.profile != null
+        else -> false
+    }    // Determine if there’s an existing farm    //val hasExistingFarm = (uiState as? FarmProfileUiState.Success)?.profile != null
 
-    // Determine if there’s an existing farm
-    val hasExistingFarm = (uiState as? FarmProfileUiState.Success)?.profile != null
 
-//    // Handle save success
-//    LaunchedEffect(isSaved) {
-//        if (isSaved) {
-//            isEditMode = false
-//            farmViewModel.resetSavedFlag()
-//        }
-//    }
-
-    // Switch off edit mode once saved
+    // Handle save success and switch off edit mode
     LaunchedEffect(isSaved) {
         if (isSaved) {
+            isEditMode = false
             farmViewModel.resetSavedFlag()
         }
     }
@@ -225,30 +215,66 @@ fun FarmProfileScreen(
             }
         }
     ) { paddingValues ->
-        when {
-            uiState is FarmProfileUiState.Loading -> {
-                LoadingScreen(modifier = Modifier.padding(paddingValues))
+
+        when (uiState) {
+            is FarmProfileUiState.Loading -> LoadingScreen(Modifier.padding(paddingValues))
+            is FarmProfileUiState.Success -> {
+                if (hasExistingFarm) {
+                    FarmDashboardContent(
+                        profile = (uiState as FarmProfileUiState.Success).profile!!,
+                        modifier = Modifier.padding(paddingValues),
+                        onEdit = { /* switch to edit form if desired */ }
+                    )
+                } else {
+                    CreateEditFarmContent(
+                        modifier = Modifier.padding(paddingValues),
+                        uiState = uiState,
+                        farmViewModel = farmViewModel,
+                        isEditMode = false,
+                        existingProfile = null,
+                        onCancelEdit = {}
+                    )
+                }
             }
 
-            hasExistingFarm && !isEditMode -> {
-                FarmDashboardContent(
-                    modifier = Modifier.padding(paddingValues),
-                    profile = (uiState as FarmProfileUiState.Success).profile!!,
-                    onEdit = { isEditMode = true }
-                )
-            }
-
-            else -> {
+            is FarmProfileUiState.Error -> {
+                // show error + fallback to create form
                 CreateEditFarmContent(
                     modifier = Modifier.padding(paddingValues),
                     uiState = uiState,
                     farmViewModel = farmViewModel,
-                    isEditMode = isEditMode,
-                    existingProfile = if (hasExistingFarm) (uiState as FarmProfileUiState.Success).profile else null,
-                    onCancelEdit = { isEditMode = false }
+                    isEditMode = false,
+                    existingProfile = null,
+                    onCancelEdit = {}
                 )
             }
+            else -> {}
         }
+
+//        when {
+//            uiState is FarmProfileUiState.Loading -> {
+//                LoadingScreen(modifier = Modifier.padding(paddingValues))
+//            }
+//
+//            hasExistingFarm && !isEditMode -> {
+//                FarmDashboardContent(
+//                    modifier = Modifier.padding(paddingValues),
+//                    profile = (uiState as FarmProfileUiState.Success).profile!!,
+//                    onEdit = { isEditMode = true }
+//                )
+//            }
+//
+//            else -> {
+//                CreateEditFarmContent(
+//                    modifier = Modifier.padding(paddingValues),
+//                    uiState = uiState,
+//                    farmViewModel = farmViewModel,
+//                    isEditMode = isEditMode,
+//                    existingProfile = if (hasExistingFarm) (uiState as FarmProfileUiState.Success).profile else null,
+//                    onCancelEdit = { isEditMode = false }
+//                )
+//            }
+//        }
     }
 }
 
