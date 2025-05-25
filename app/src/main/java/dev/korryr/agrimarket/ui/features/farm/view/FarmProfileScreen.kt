@@ -1,15 +1,23 @@
 package dev.korryr.agrimarket.ui.features.farm.view
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -21,16 +29,19 @@ import dev.korryr.agrimarket.ui.features.farm.presentation.FarmingTypeSelector
 import dev.korryr.agrimarket.ui.features.farm.viewModel.FarmProfileUiState
 import dev.korryr.agrimarket.ui.features.farm.viewModel.FarmProfileViewModel
 import dev.korryr.agrimarket.ui.shareUI.AgribuzTextField
+import coil.compose.rememberAsyncImagePainter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FarmProfileScreen(
     farmViewModel: FarmProfileViewModel = hiltViewModel(),
     onSaved: () -> Unit = {},
-    onBackPressed: () -> Unit = {}
+    onBackPressed: () -> Unit = {},
+    onNavigateToPostScreen: () -> Unit = {}
 ) {
     val uiState by farmViewModel.uiState.collectAsState()
     val isSaved by farmViewModel.isSaved.collectAsState()
+    val profile = (uiState as? FarmProfileUiState.Success)?.profile
     val state = uiState
 
     // Form state
@@ -59,24 +70,31 @@ fun FarmProfileScreen(
         "Dairy Farming"
     )
 
-    // Populate fields when profile is loaded
-    LaunchedEffect(uiState) {
-        val currentUiState = uiState //capture for smart cast withiin lauch efffect
-        if (currentUiState is FarmProfileUiState.Success) {
-            currentUiState.profile?.let { profile ->
-                farmName = profile.farmName
-                location = profile.location
-                farmingType = profile.typeOfFarming ?: ""
-                contact = profile.contact
-            }
-        }
-    }
+//    // Populate fields when profile is loaded
+//    LaunchedEffect(uiState) {
+//        val currentUiState = uiState //capture for smart cast withiin lauch efffect
+//        if (currentUiState is FarmProfileUiState.Success) {
+//            currentUiState.profile?.let { profile ->
+//                farmName = profile.farmName
+//                location = profile.location
+//                farmingType = profile.typeOfFarming ?: ""
+//                contact = profile.contact
+//            }
+//        }
+//    }
 
-    // Handle save success
-    LaunchedEffect(isSaved) {
-        if (isSaved) {
-            onSaved()
-            farmViewModel.resetSavedFlag()
+//    // Handle save success
+//    LaunchedEffect(isSaved) {
+//        if (isSaved) {
+//            onNavigateToPostScreen()
+//            farmViewModel.resetSavedFlag()
+//        }
+//    }
+
+    LaunchedEffect(uiState) {
+        if (uiState is FarmProfileUiState.Success) {
+            onNavigateToPostScreen()
+            farmViewModel.resetSavedFlag() // if using flag, but here using uiState
         }
     }
 
@@ -97,7 +115,7 @@ fun FarmProfileScreen(
                 navigationIcon = {
                     IconButton(onClick = onBackPressed) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
                         )
                     }
@@ -106,6 +124,18 @@ fun FarmProfileScreen(
                     containerColor = MaterialTheme.colorScheme.surface
                 )
             )
+        },
+        floatingActionButton = {
+            if (uiState is FarmProfileUiState.Success) {
+                FloatingActionButton(
+                    onClick = onNavigateToPostScreen
+                ) {
+                    Icon(
+                        Icons.Default.Add,
+                        contentDescription = "Add Post"
+                    )
+                }
+            }
         }
     ) { paddingValues ->
         Column(
@@ -117,6 +147,23 @@ fun FarmProfileScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Spacer(modifier = Modifier.height(8.dp))
+
+            // Farm Profile Image
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Image(
+                    painter = rememberAsyncImagePainter(profile?.imageUrl.orEmpty().ifEmpty { "https://via.placeholder.com/150" }),
+                    contentDescription = "Farm Profile Image",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(CircleShape)
+                        .clickable { /* TODO: open image picker */ }
+                )
+            }
+
 
             // Header Section
             FarmProfileHeader()
@@ -160,7 +207,7 @@ fun FarmProfileScreen(
                             locationError = ""
                         },
                         label = "Farm Location",
-                        hint = "Enter farm location",
+                        hint = "Moiben City",
                         error = locationError,
                         modifier = Modifier.fillMaxWidth(),
                         keyboardOptions = KeyboardOptions(
@@ -185,7 +232,7 @@ fun FarmProfileScreen(
                             contactError = ""
                         },
                         label = "Contact Information",
-                        hint = "Phone number or email",
+                        hint = "0712345678",
                         error = contactError,
                         modifier = Modifier.fillMaxWidth(),
                         keyboardOptions = KeyboardOptions(

@@ -7,6 +7,7 @@ data class FarmProfile(
   val location: String = "",
   val typeOfFarming: String = "",
   val contact: String = "",
+  val imageUrl: String = "",
   val createdAt: Long = System.currentTimeMillis()
 )
 
