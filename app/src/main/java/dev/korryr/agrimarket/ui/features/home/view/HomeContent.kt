@@ -94,8 +94,8 @@ fun HomeContent(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(contentPadding)
                 .verticalScroll(rememberScrollState())
+                .padding(contentPadding)
                 .padding(horizontal = 16.dp)
         ) {
 
@@ -276,7 +276,7 @@ fun HomeContent(
             }
 
             // Bottom spacer for FAB clearance
-            Spacer(modifier = Modifier.height(80.dp))
+            //Spacer(modifier = Modifier.height(80.dp))
         }
     }
 }
