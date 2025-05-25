@@ -116,7 +116,10 @@ fun CreateEditFarmContent(
         // Form Section
         Card(
             modifier = Modifier.fillMaxWidth(),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            )
         ) {
             Column(
                 modifier = Modifier.padding(16.dp),
@@ -173,7 +176,7 @@ fun CreateEditFarmContent(
                         contactError = ""
                     },
                     label = "Contact Information",
-                    hint = "Phone number or email",
+                    hint = "0712345678",
                     error = contactError,
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(

@@ -51,7 +51,8 @@ fun FarmProfileScreen(
     ) {
         is FarmProfileUiState.Success -> currentState.profile != null
         else -> false
-    }    // Determine if there’s an existing farm    //val hasExistingFarm = (uiState as? FarmProfileUiState.Success)?.profile != null
+    }    // Determine if there’s an existing farm
+    // val hasExistingFarm = (uiState as? FarmProfileUiState.Success)?.profile != null
 
 
     // Handle save success and switch off edit mode
@@ -118,20 +119,20 @@ fun FarmProfileScreen(
         when (uiState) {
             is FarmProfileUiState.Loading -> LoadingScreen(Modifier.padding(paddingValues))
             is FarmProfileUiState.Success -> {
-                if (hasExistingFarm) {
+                if (hasExistingFarm && !isEditMode) {
                     FarmDashboardContent(
                         profile = (uiState as FarmProfileUiState.Success).profile!!,
                         modifier = Modifier.padding(paddingValues),
-                        onEdit = { /* switch to edit form if desired */ }
+                        onEdit = { isEditMode =true }
                     )
                 } else {
                     CreateEditFarmContent(
                         modifier = Modifier.padding(paddingValues),
                         uiState = uiState,
                         farmViewModel = farmViewModel,
-                        isEditMode = false,
-                        existingProfile = null,
-                        onCancelEdit = {}
+                        isEditMode = isEditMode,
+                        existingProfile = if (hasExistingFarm) (uiState as FarmProfileUiState.Success).profile else null,
+                        onCancelEdit = { isEditMode = false }
                     )
                 }
             }
@@ -142,9 +143,9 @@ fun FarmProfileScreen(
                     modifier = Modifier.padding(paddingValues),
                     uiState = uiState,
                     farmViewModel = farmViewModel,
-                    isEditMode = false,
-                    existingProfile = null,
-                    onCancelEdit = {}
+                    isEditMode = isEditMode,
+                    existingProfile = if (hasExistingFarm) (uiState as FarmProfileUiState.Success).profile else null,
+                    onCancelEdit = { isEditMode = false }
                 )
             }
 
