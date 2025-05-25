@@ -31,6 +31,11 @@ import dev.korryr.agrimarket.ui.features.farm.viewModel.FarmProfileViewModel
 import dev.korryr.agrimarket.ui.shareUI.AgribuzTextField
 import coil.compose.rememberAsyncImagePainter
 
+enum class FarmProfileMode {
+    CREATE,
+    VIEW_AND_POST
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FarmProfileScreen(
@@ -83,7 +88,7 @@ fun FarmProfileScreen(
 //        }
 //    }
 
-//    // Handle save success
+    // Handle save success
 //    LaunchedEffect(isSaved) {
 //        if (isSaved) {
 //            onNavigateToPostScreen()

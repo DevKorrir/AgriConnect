@@ -13,5 +13,6 @@ sealed class Screen(
     object Education : Screen("education")
     object Community : Screen("community")
     object Profile : Screen("profile")
+    object Post : Screen("post")
 
 }

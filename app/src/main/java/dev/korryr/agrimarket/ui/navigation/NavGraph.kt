@@ -42,6 +42,7 @@ import dev.korryr.agrimarket.ui.features.market.view.MarketScreen
 import dev.korryr.agrimarket.ui.features.welcome.AgribuzWelcomeScreen
 import dev.korryr.agrimarket.ui.features.messages.view.MessageScreen
 import dev.korryr.agrimarket.ui.features.orders.view.OrderScreen
+import dev.korryr.agrimarket.ui.features.posts.view.PostScreen
 import dev.korryr.agrimarket.ui.features.profile.view.ProfileScreen
 
 @Composable
@@ -260,18 +261,39 @@ fun NavGraph(
             composable(BottomScreens.Message.route) {
                 MessageScreen()
             }
+
             composable(BottomScreens.Orders.route) {
                 OrderScreen()
             }
+
             composable(BottomScreens.Profile.route) {
                 //ProfileScreen()
                 Box(
-                    modifier = Modifier.padding(scaffoldPadding)
+                    //modifier = Modifier.padding(scaffoldPadding)
                 ) {
-                    FarmProfileScreen()
+                    FarmProfileScreen(
+                        onNavigateToPostScreen = {
+                            navController.navigate(Screen.Post.route)
+                        },
+                        onBackPressed = {
+                            navController.navigateUp()
+                        }
+                    )
                 }
 
             }
+
+
+            composable(Screen.Post.route) {
+                PostScreen()
+            }
+
+
+
+
+
+
+
 
         }
     }
