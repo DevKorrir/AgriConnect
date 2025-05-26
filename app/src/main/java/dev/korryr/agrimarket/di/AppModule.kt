@@ -1,8 +1,11 @@
 package dev.korryr.agrimarket.di
 
 import android.content.Context
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.storage
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -54,6 +57,10 @@ object AppModule {
     ): AuthPreferencesRepository {
         return AuthPreferencesRepository(context) // pass context to the constructor
     }
+
+    @Provides
+    @Singleton
+    fun provideFirebaseStorage(): FirebaseStorage = Firebase.storage
 
 
 

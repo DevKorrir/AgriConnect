@@ -1,7 +1,10 @@
 package dev.korryr.agrimarket.ui.features.farm.data.repo
 
 import android.content.Context
+import android.graphics.ImageDecoder
 import android.net.Uri
+import android.os.Build
+import android.provider.MediaStore
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.toObject
@@ -50,6 +53,46 @@ class FarmRepositoryImpl @Inject constructor(
 
             } catch (e: Exception) {
                 throw Exception("Image upload failed: ${e.localizedMessage}")
+            }
+        }
+    }
+
+    private suspend fun compressImage(uri: Uri, context: Context): Uri? {
+        return withContext(Dispatchers.IO) {
+            try {
+               val bitmap = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                   val source = ImageDecoder.createSource(context.contentResolver, uri)
+                   ImageDecoder.decodeBitmap(source)
+               } else {
+                   @Suppress("DEPRECATION")
+                   MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
+               }
+
+                // Resize if too large (max 1024px)
+                val maxSize = 1024
+                val ratio = minOf(
+                    maxSize.toFloat() / bitmap.width,
+                    maxSize.toFloat() / bitmap.height
+                )
+
+                val resizedBitmap = if (ratio < 1) {
+                    Bitmap.createScaledBitmap(
+                        bitmap,
+                        (bitmap.width * ratio).toInt(),
+                        (bitmap.height * ratio).toInt(),
+                        true
+                    )
+                } else bitmap
+
+                // Save compressed image to cache
+                val file = File(context.cacheDir, "compressed_${System.currentTimeMillis()}.jpg")
+                file.outputStream().use { out ->
+                    resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 85, out)
+                }
+
+                Uri.fromFile(file)
+            } catch (e: Exception) {
+                null // Return null if compression fails, will use original
             }
         }
     }
