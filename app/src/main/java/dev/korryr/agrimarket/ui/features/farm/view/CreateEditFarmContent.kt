@@ -135,7 +135,7 @@ fun CreateEditFarmContent(
                         farmNameError = ""
                     },
                     label = "Farm Name",
-                    hint = "Enter your farm name",
+                    hint = "Koromosho Farm",
                     error = farmNameError,
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(

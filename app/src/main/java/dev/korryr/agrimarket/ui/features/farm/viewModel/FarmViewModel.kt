@@ -1,5 +1,7 @@
 package dev.korryr.agrimarket.ui.features.farm.viewModel
 
+import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
@@ -29,6 +31,9 @@ class FarmProfileViewModel @Inject constructor(
 
     private val _isSaved = MutableStateFlow(false)
     val isSaved: StateFlow<Boolean> = _isSaved
+
+    private val _isUploadingImage = MutableStateFlow(false)
+    val isUploadingImage: StateFlow<Boolean> = _isUploadingImage
 
     init {
         // As soon as ViewModel is created, try to load existing farm
@@ -86,6 +91,64 @@ class FarmProfileViewModel @Inject constructor(
     fun resetSavedFlag() {
         _isSaved.value = false
     }
+
+    fun uploadProfileImage(
+        uri: Uri,
+        context: Context
+    ) {
+        viewModelScope.launch {
+            _isUploadingImage.value = true
+            try {
+                val imageUrl = uploadImageToStorage(uri, context)
+                updateProfileImageUrl(imageUrl)
+            } catch (e: Exception) {
+                _uiState.value =
+                    FarmProfileUiState.Error(e.localizedMessage ?: "Image upload failed")
+            } finally {
+                _isUploadingImage.value = false
+            }
+        }
+    }
+
+    private suspend fun uploadImageToStorage(
+        uri: Uri,
+        context: Context
+    ): String {
+        return repo.uploadImageToStorage(uri, context)
+    }
+
+    private suspend fun updateProfileImage(imageUrl: String) {
+        val currentState = _uiState.value
+        if (currentState is FarmProfileUiState.Success) {
+            val updatedProfile = currentState.profile?.copy(imageUrl = imageUrl)
+            _uiState.value = FarmProfileUiState.Success(updatedProfile)
+
+            // Save to Firestore if profile exists
+            updatedProfile?.let { repo.saveFarm(it) }
+        }
+    }
+
+//    private suspend fun uploadImageToStorage(uri: Uri, context: Context): String {
+//        return withContext(Dispatchers.IO) {
+//            val storage = Firebase.storage
+//            val userId = auth.currentUser?.uid ?: throw Exception("User not logged in")
+//            val imageRef = storage.reference.child("farm_profiles/$userId/profile_${System.currentTimeMillis()}.jpg")
+//
+//            val uploadTask = imageRef.putFile(uri).await()
+//            imageRef.downloadUrl.await().toString()
+//        }
+//    }
+//
+//    private suspend fun updateProfileImage(imageUrl: String) {
+//        val currentState = _uiState.value
+//        if (currentState is FarmProfileUiState.Success) {
+//            val updatedProfile = currentState.profile?.copy(imageUrl = imageUrl)
+//            _uiState.value = FarmProfileUiState.Success(updatedProfile)
+//
+//            // Save to Firestore if profile exists
+//            updatedProfile?.let { repo.saveFarm(it) }
+//        }
+//    }
 
 
 }
