@@ -60,7 +60,9 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideFirebaseStorage(): FirebaseStorage = Firebase.storage
+    fun provideFirebaseStorage(): FirebaseStorage {
+        return FirebaseStorage.getInstance()
+    }
 
 
 

@@ -103,15 +103,16 @@ fun CreateEditFarmContent(
 
         // Profile Image Section (for edit mode)
         if (isEditMode) {
+            ProfileImageSection(
+                viewModel = farmViewModel,
+                isEditMode = isEditMode
+            )
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier.fillMaxWidth()
             ) {
 
-                ProfileImageSection(
-                    viewModel = farmViewModel,
-                    isEditMode = isEditMode
-                )
+
 //                Image(
 //                    painter = rememberAsyncImagePainter(
 //                        existingProfile?.imageUrl?.ifEmpty { "https://via.placeholder.com/150" }
