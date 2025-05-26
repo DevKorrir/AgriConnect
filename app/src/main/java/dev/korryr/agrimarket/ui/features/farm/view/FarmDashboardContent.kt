@@ -72,7 +72,7 @@ fun FarmDashboardContent(
                 contentDescription = "Farm Profile Image",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .size(50.dp)
+                    .size(100.dp)
                     .clip(CircleShape)
                     .clickable { /* TODO: open image picker */ }
             )
