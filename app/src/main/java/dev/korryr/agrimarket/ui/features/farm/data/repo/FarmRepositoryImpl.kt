@@ -14,6 +14,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
+import android.graphics.Bitmap
+import java.io.File
 
 class FarmRepositoryImpl @Inject constructor(
     private val firestore: FirebaseFirestore,

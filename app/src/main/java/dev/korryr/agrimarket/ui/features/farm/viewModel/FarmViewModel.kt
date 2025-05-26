@@ -100,10 +100,9 @@ class FarmProfileViewModel @Inject constructor(
             _isUploadingImage.value = true
             try {
                 val imageUrl = uploadImageToStorage(uri, context)
-                updateProfileImageUrl(imageUrl)
+                updateProfileImage(imageUrl)
             } catch (e: Exception) {
-                _uiState.value =
-                    FarmProfileUiState.Error(e.localizedMessage ?: "Image upload failed")
+                _uiState.value = FarmProfileUiState.Error(e.localizedMessage ?: "Image upload failed")
             } finally {
                 _isUploadingImage.value = false
             }

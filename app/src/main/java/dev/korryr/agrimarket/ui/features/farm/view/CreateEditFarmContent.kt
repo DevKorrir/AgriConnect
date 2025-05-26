@@ -1,6 +1,9 @@
 package dev.korryr.agrimarket.ui.features.farm.view
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,14 +20,18 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.PhotoCamera
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,11 +40,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import dev.korryr.agrimarket.ui.features.farm.data.model.FarmProfile
 import dev.korryr.agrimarket.ui.features.farm.presentation.FarmProfileHeader
@@ -97,18 +107,23 @@ fun CreateEditFarmContent(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Image(
-                    painter = rememberAsyncImagePainter(
-                        existingProfile?.imageUrl?.ifEmpty { "https://via.placeholder.com/150" }
-                            ?: "https://via.placeholder.com/150"
-                    ),
-                    contentDescription = "Farm Profile Image",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(100.dp)
-                        .clip(CircleShape)
-                        .clickable { /* TODO: open image picker */ }
+
+                ProfileImageSection(
+                    viewModel = farmViewModel,
+                    isEditMode = isEditMode
                 )
+//                Image(
+//                    painter = rememberAsyncImagePainter(
+//                        existingProfile?.imageUrl?.ifEmpty { "https://via.placeholder.com/150" }
+//                            ?: "https://via.placeholder.com/150"
+//                    ),
+//                    contentDescription = "Farm Profile Image",
+//                    contentScale = ContentScale.Crop,
+//                    modifier = Modifier
+//                        .size(100.dp)
+//                        .clip(CircleShape)
+//                        .clickable { /* TODO: open image picker */ }
+//                )
             }
         } else {
             // Header for create mode
@@ -325,5 +340,89 @@ private fun validateAndSave(
 
     if (isValid) {
         onValidationSuccess()
+    }
+}
+
+// Simplified Composable
+@Composable
+fun ProfileImageSection(
+    viewModel: FarmProfileViewModel,
+    isEditMode: Boolean,
+    modifier: Modifier = Modifier
+) {
+    val uiState by viewModel.uiState.collectAsState()
+    val isUploading by viewModel.isUploadingImage.collectAsState()
+    val context = LocalContext.current
+
+
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        uri?.let { viewModel.uploadProfileImage(it, context) }
+    }
+
+    if (isEditMode) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = modifier.fillMaxWidth()
+        ) {
+            Card(
+                modifier = Modifier.size(100.dp),
+                shape = CircleShape,
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    AsyncImage(
+                        model = when (val state = uiState) {
+                            is FarmProfileUiState.Success ->
+                                state.profile?.imageUrl?.ifEmpty {
+                                    "https://via.placeholder.com/150/4CAF50/FFFFFF?text=🌱"
+                                } ?: "https://via.placeholder.com/150/4CAF50/FFFFFF?text=🌱"
+                            else -> "https://via.placeholder.com/150/4CAF50/FFFFFF?text=🌱"
+                        },
+                        contentDescription = "Farm Profile Image",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clickable(enabled = !isUploading) {
+                                imagePickerLauncher.launch("image/*")
+                            }
+                    )
+
+                    if (isUploading) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(Color.Black.copy(alpha = 0.6f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                color = Color.White,
+                                strokeWidth = 2.dp
+                            )
+                        }
+                    }
+
+                    if (!isUploading) {
+                        Icon(
+                            imageVector = Icons.Rounded.PhotoCamera,
+                            contentDescription = "Change Photo",
+                            tint = Color.White,
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .background(
+                                    MaterialTheme.colorScheme.primary,
+                                    CircleShape
+                                )
+                                .padding(4.dp)
+                                .size(16.dp)
+                        )
+                    }
+                }
+            }
+        }
+    } else {
+        FarmProfileHeader()
     }
 }
