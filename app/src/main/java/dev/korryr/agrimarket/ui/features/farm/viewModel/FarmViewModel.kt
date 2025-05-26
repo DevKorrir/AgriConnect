@@ -58,6 +58,7 @@ class FarmProfileViewModel @Inject constructor(
         location: String,
         typeOfFarming: String,
         contactInfo: String,
+        imageUrl: String = ""
     ) {
         viewModelScope.launch {
             _uiState.value = FarmProfileUiState.Saving(true)
@@ -69,7 +70,8 @@ class FarmProfileViewModel @Inject constructor(
                     farmName = farmName,
                     location = location,
                     typeOfFarming = typeOfFarming,
-                    contact = contactInfo
+                    contact = contactInfo,
+                    imageUrl = imageUrl
                 )
                 //save to firestore
                 repo.saveFarm(farm)
@@ -99,6 +101,11 @@ class FarmProfileViewModel @Inject constructor(
         viewModelScope.launch {
             _isUploadingImage.value = true
             try {
+                // Verify user is authenticated
+                if (auth.currentUser == null) {
+                    throw Exception("Please log in to upload images")
+                }
+
                 val imageUrl = uploadImageToStorage(uri, context)
                 updateProfileImage(imageUrl)
             } catch (e: Exception) {
