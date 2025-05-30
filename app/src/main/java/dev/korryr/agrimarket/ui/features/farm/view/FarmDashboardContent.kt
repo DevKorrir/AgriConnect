@@ -66,7 +66,7 @@ fun FarmDashboardContent(
         ) {
             Image(
                 painter = rememberAsyncImagePainter(
-                    profile.imageUrl?.ifEmpty { "https://via.placeholder.com/150" }
+                    profile.imageUrl.ifEmpty { "https://via.placeholder.com/150" }
                         ?: "https://via.placeholder.com/150"
                 ),
                 contentDescription = "Farm Profile Image",

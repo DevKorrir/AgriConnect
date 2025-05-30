@@ -107,7 +107,8 @@ fun FarmProfileScreen(
         floatingActionButton = {
             if (hasExistingFarm && !isEditMode) {
                 FloatingActionButton(
-                    onClick = onNavigateToPostScreen
+                    onClick = onNavigateToPostScreen,
+                    containerColor = MaterialTheme.colorScheme.primary
                 ) {
                     Icon(
                         Icons.Default.Add,
