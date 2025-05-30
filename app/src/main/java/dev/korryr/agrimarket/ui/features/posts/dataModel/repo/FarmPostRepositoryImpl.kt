@@ -21,7 +21,7 @@ class FarmPostRepositoryImpl @Inject constructor(
 
     override suspend fun getRecentPosts(farmId: String): List<FarmPost> {
         return postsCollection.whereEqualTo("farmId", farmId)
-            .orderBy("timestamp", Query.Direction.DESCENDING)
+            //.orderBy("timestamp", Query.Direction.DESCENDING)
             .limit(5)
             .get()
             .await()

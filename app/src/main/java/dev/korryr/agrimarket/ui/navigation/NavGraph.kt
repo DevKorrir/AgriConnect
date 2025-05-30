@@ -36,7 +36,7 @@ import dev.korryr.agrimarket.ui.features.auth.phoneAuth.viewModel.AuthUiState
 import dev.korryr.agrimarket.ui.features.auth.phoneAuth.viewModel.AuthViewModel
 import dev.korryr.agrimarket.ui.features.auth.preferences.AuthPreferencesRepository
 import dev.korryr.agrimarket.ui.features.bottomNav.viewModel.BottomScreens
-import dev.korryr.agrimarket.ui.features.farm.view.CreatePostScreen
+import dev.korryr.agrimarket.ui.features.posts.view.CreatePostScreen
 import dev.korryr.agrimarket.ui.features.farm.view.FarmProfileScreen
 import dev.korryr.agrimarket.ui.features.home.HomePage
 import dev.korryr.agrimarket.ui.features.market.view.MarketScreen
@@ -63,7 +63,7 @@ fun NavGraph(
 
     //declare route
     val startRoute = when {
-        isLoggedIn -> Screen.Home.route
+        isLoggedIn -> Screen.Post.route
         else -> Screen.Welcome.route
     }
 

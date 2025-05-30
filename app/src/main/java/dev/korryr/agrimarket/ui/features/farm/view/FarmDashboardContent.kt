@@ -224,6 +224,11 @@ fun FarmDashboardContent(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
+//                        posts.take(3).forEach { post ->
+//                            Text(text = post.description)
+//                            // Add an image if available
+//                        }
+
                         Icon(
                             imageVector = Icons.Default.Add,
                             contentDescription = null,
