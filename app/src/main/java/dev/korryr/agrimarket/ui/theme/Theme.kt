@@ -86,8 +86,8 @@ fun AgriMarketTheme(
         }
 
         darkTheme -> DarkColorScheme
-        else -> LightColorScheme
-        //DarkColorScheme
+        else ->// LightColorScheme
+        DarkColorScheme
     }
 
     MaterialTheme(
