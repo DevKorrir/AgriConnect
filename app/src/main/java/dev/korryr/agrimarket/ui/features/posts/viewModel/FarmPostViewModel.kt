@@ -130,7 +130,7 @@ class FarmPostViewModel @Inject constructor(
      * Loads the most recent posts for the given farmId (farmer UID) from the repository.
      * You can call this after a successful create, or from your UI when you first need to display them.
      */
-    private fun loadRecentPosts(farmId: String) {
+    fun loadRecentPosts(farmId: String) {
         viewModelScope.launch {
             try {
                 _recentPosts.value = repository.getRecentPosts(farmId)
