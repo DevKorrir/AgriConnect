@@ -87,6 +87,21 @@ fun CreatePostScreen(
 
     val isPosting by postViewModel.isPosting.collectAsState()
     val error by postViewModel.error.collectAsState()
+    val isPostSuccessful by postViewModel.isPostSuccessful.collectAsState()
+
+    // Function to clear all fields
+    fun clearAllFields() {
+        imageUri = null
+        description = ""
+        price = ""
+        quantity = ""
+        size = ""
+        descriptionError = ""
+        priceError = ""
+        quantityError = ""
+        sizeError = ""
+        imageError = ""
+    }
 
     val colorScheme = MaterialTheme.colorScheme
 
@@ -104,7 +119,15 @@ fun CreatePostScreen(
         animatedVisibility.animateTo(1f, tween(800, easing = EaseOutCubic))
     }
 
-    var hasSubmitted by remember { mutableStateOf(false) }
+    // Handle post success
+    LaunchedEffect(isPostSuccessful) {
+        if (isPostSuccessful) {
+            clearAllFields()
+            onPostSuccess()
+            // Reset the success state in ViewModel to prevent repeated clearing
+            postViewModel.resetPostSuccessState()
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -368,7 +391,7 @@ fun CreatePostScreen(
                 Button(
                     onClick = {
                         showErrors = true
-                        validateForm(
+                        val isValid = validateForm(
                             imageUri, description, price, quantity, size,
                             { imageError = it },
                             { descriptionError = it },
@@ -376,18 +399,22 @@ fun CreatePostScreen(
                             { quantityError = it },
                             { sizeError = it }
                         )
-                        onPostSuccess()
-//                        if (validateForm()) {
-//                            val imageUrl = imageUri.toString() ?: ""
-//                            postViewModel.createPost(
-//                                imageUrl = imageUrl,
-//                                description = description,
-//                                price = price.toDoubleOrNull() ?: 0.0,
-//                                quantity = quantity.toIntOrNull() ?: 0,
-//                                size = size
-//                            )
 
-                       // }
+                        if (isValid) {
+                            // 3a. Reset the ViewModel’s success state (so that the LaunchedEffect below can react once more)
+                            postViewModel.resetPostSuccessState()
+
+                            // 3b. Create a new post (imageUri is non-null here because validation passed)
+                            val imageUrl = imageUri.toString() ?: ""
+                            postViewModel.createPost(
+                                imageUrl = imageUrl,
+                                description = description,
+                                price = price.toDoubleOrNull() ?: 0.0,
+                                quantity = quantity.toIntOrNull() ?: 0,
+                                size = size
+                            )
+
+                        }
                     },
                     enabled = !isPosting && isFormComplete,
                     modifier = Modifier
@@ -415,7 +442,9 @@ fun CreatePostScreen(
                                 strokeWidth = 2.dp,
                                 modifier = Modifier.size(20.dp)
                             )
+
                             Spacer(modifier = Modifier.width(12.dp))
+
                             Text(
                                 "Publishing...",
                                 style = MaterialTheme.typography.titleMedium.copy(
@@ -432,7 +461,9 @@ fun CreatePostScreen(
                                 Icons.Default.Publish,
                                 contentDescription = null,
                                 modifier = Modifier.size(20.dp),
-                                tint = if (isFormComplete) colorScheme.onPrimary else colorScheme.onSurface.copy(alpha = 0.38f)
+                                tint = if (isFormComplete) colorScheme.onPrimary else colorScheme.onSurface.copy(
+                                    alpha = 0.38f
+                                )
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
@@ -440,7 +471,9 @@ fun CreatePostScreen(
                                 style = MaterialTheme.typography.titleMedium.copy(
                                     fontWeight = FontWeight.SemiBold
                                 ),
-                                color = if (isFormComplete) colorScheme.onPrimary else colorScheme.onSurface.copy(alpha = 0.38f)
+                                color = if (isFormComplete) colorScheme.onPrimary else colorScheme.onSurface.copy(
+                                    alpha = 0.38f
+                                )
                             )
                         }
                     }
@@ -509,56 +542,56 @@ private fun validateForm(
 
     // Validate image
     if (imageUri == null) {
-        imageError ("Please select a product image")
+        imageError("Please select a product image")
         isValid = false
     } else {
-        imageError ( "")
+        imageError("")
     }
 
     // Validate description
     if (description.isEmpty()) {
-        descriptionError ( "Product description is required")
+        descriptionError("Product description is required")
         isValid = false
     } else if (description.length < 10) {
-        descriptionError ("Description must be at least 10 characters")
+        descriptionError("Description must be at least 10 characters")
         isValid = false
     } else {
-        descriptionError ( "")
+        descriptionError("")
     }
 
     // Validate price
     val priceValue = price.toDoubleOrNull()
     if (price.isBlank()) {
-        priceError ( "Price is required")
+        priceError("Price is required")
         isValid = false
     } else if (priceValue == null || priceValue <= 0) {
-        priceError ("Please enter a valid price")
+        priceError("Please enter a valid price")
         isValid = false
     } else {
-        priceError ("")
+        priceError("")
     }
 
     // Validate quantity
     val quantityValue = quantity.toIntOrNull()
     if (quantity.isBlank()) {
-        quantityError ( "Quantity is required")
+        quantityError("Quantity is required")
         isValid = false
     } else if (quantityValue == null || quantityValue <= 0) {
-        quantityError ("Please enter a valid quantity")
+        quantityError("Please enter a valid quantity")
         isValid = false
     } else {
-        quantityError ("")
+        quantityError("")
     }
 
     // Validate size
     if (size.isBlank()) {
-        sizeError ( "Farm size is required")
+        sizeError("Farm size is required")
         isValid = false
     } else if (size.length < 2) {
-        sizeError ("Please provide more details about farm size")
+        sizeError("Please provide more details about farm size")
         isValid = false
     } else {
-        sizeError ("")
+        sizeError("")
     }
 
     return isValid

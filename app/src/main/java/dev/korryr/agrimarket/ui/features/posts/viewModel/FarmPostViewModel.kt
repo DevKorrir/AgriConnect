@@ -8,6 +8,7 @@ import dev.korryr.agrimarket.ui.features.posts.dataModel.dataClass.FarmPost
 import dev.korryr.agrimarket.ui.features.posts.dataModel.repo.FarmPostRepositoryImpl
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -26,6 +27,9 @@ class FarmPostViewModel @Inject constructor(
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error
 
+    private val _isPostSuccessful = MutableStateFlow(false)
+    val isPostSuccessful: StateFlow<Boolean> = _isPostSuccessful.asStateFlow()
+
     fun createPost(
         imageUrl: String,
         description: String,
@@ -34,8 +38,14 @@ class FarmPostViewModel @Inject constructor(
         size: String
     ){
         viewModelScope.launch {
+
+            _isPosting.value = true
+
             try{
-                _isPosting.value = true
+
+                _error.value = null
+                _isPostSuccessful.value = false
+
                 val uid = auth.currentUser?.uid ?: throw Exception("User not authenticated")
                 val post = FarmPost(
                     farmId = uid,
@@ -45,11 +55,24 @@ class FarmPostViewModel @Inject constructor(
                     quantity = quantity,
                     size = size
                 )
-                repository.createPost(post)
-                loadRecentPosts(uid)
-                _isPosting.value = false
+                val result = repository.createPost(post) //results is now Result<String>
+
+                if (result.isSuccess) {
+                    // result.getOrNull() would give you the String ID if you need it here
+                    val postId = result.getOrNull()
+                    // Log.d("FarmPostViewModel", "Post created successfully with ID: $postId")
+                    loadRecentPosts(uid) // Assuming uid is available here
+                    _isPostSuccessful.value = true
+                    _error.value = null
+                } else {
+                    _error.value = result.exceptionOrNull()?.message ?: "Failed to create post"
+                    _isPostSuccessful.value = false
+                }
             } catch (e: Exception){
                 _error.value = e.localizedMessage
+                _isPostSuccessful.value = false
+
+            } finally {
                 _isPosting.value = false
 
             }
@@ -64,6 +87,15 @@ class FarmPostViewModel @Inject constructor(
                 _error.value = e.localizedMessage
             }
         }
+    }
+
+    fun resetPostSuccessState() {
+        _isPostSuccessful.value = false
+    }
+
+    // Optional: Add a method to clear error state
+    fun clearError() {
+        _error.value = null
     }
 
 
