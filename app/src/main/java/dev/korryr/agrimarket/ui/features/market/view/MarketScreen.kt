@@ -202,7 +202,7 @@ private fun MarketPostCard(
                     Image(
                         painter = rememberAsyncImagePainter(post.imageUrl),
                         contentDescription = "Product Image",
-                        contentScale = ContentScale.Crop,
+                        contentScale = ContentScale.FillBounds,
                         modifier = Modifier
                             .fillMaxSize()
                     )
