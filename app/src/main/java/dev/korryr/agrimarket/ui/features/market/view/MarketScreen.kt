@@ -335,14 +335,21 @@ private fun MarketPostCard(
     //    If your FarmPost has a `timestamp: com.google.firebase.Timestamp` field, do:
     //    val daysAgo by rememberDaysAgo(post.timestamp)
     //    For simplicity, here we’ll just show a placeholder if timestamp is missing.
-//    val daysAgoText = profileState?.let {
-//        post.timestamp.let { tsInMillis: Long ->
-//            val now = Calendar.getInstance().timeInMillis
-//            val then = tsInMillis
-//            val diffdays = ((now - then) / (1000 * 60 * 60 * 24)).toInt()
-//            "$diffdays d ago"
-//        } ?: ""
-//    } ?: ""
+    val daysAgoText = post.timestamp.let {
+        post.timestamp.let { tsInMillis: Long ->
+            val now = Calendar.getInstance().timeInMillis
+            val then = tsInMillis
+            val diffDays = ((now - then) / (1000 * 60 * 60 * 24)).toInt()
+
+            // Handle cases for today, yesterday, etc. for better UX if desired
+            when {
+                diffDays == 0 -> "Today"
+                diffDays == 1 -> "Yesterday"
+                diffDays < 0 -> "In the future?" // Or handle as an error/edge case
+                else -> "$diffDays d ago"
+            }
+        } ?: "Unknown"// fallback if post.timestamp is null
+    } ?: "" // fall back if profile ids null
 
     val likeCount by marketViewModel.selectedLikeCount.collectAsState()
     val userLiked by marketViewModel.selectedUserLiked.collectAsState()
@@ -450,7 +457,7 @@ private fun MarketPostCard(
                             )
                         )
                         Text(
-                            text = "3 d ago",
+                            text = daysAgoText,
                             style = MaterialTheme.typography.bodySmall.copy(
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                                 fontSize = 12.sp
