@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddAPhoto
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Favorite
@@ -41,6 +42,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import dev.korryr.agrimarket.ui.features.farm.data.model.FarmProfile
 import dev.korryr.agrimarket.ui.features.market.viewModel.MarketViewModel
@@ -57,7 +59,8 @@ fun MarketScreen(
     onFollowClick: (String) -> Unit = {},
     onLikeClick: (String) -> Unit = {},
     onCommentClick: (String) -> Unit = {},
-    onBookmarkClick: (String) -> Unit = {}
+    onBookmarkClick: (String) -> Unit = {},
+    navController: NavHostController
 ) {
 
     var visible by remember { mutableStateOf(false) }
@@ -69,13 +72,13 @@ fun MarketScreen(
     // 2. Observe the dynamic list of types
     //    Prepend "All" so that tab 0 == "All"
     val rawTypes by marketViewModel.allTypes.collectAsState()
-//    val categories = remember(rawTypes) {
-//        listOf("All") + rawTypes
-//    }
-    // If you want tabs, create your category list from allPosts.map { it.type }.distinct(), etc.
-    val categories = remember(allPosts) {
-        listOf("All") + allPosts.map { it.type }.distinct().filter { it.isNotBlank() }
+    val categories = remember(rawTypes) {
+        listOf("All") + rawTypes
     }
+    // If you want tabs, create your category list from allPosts.map { it.type }.distinct(), etc.
+//    val categories = remember(allPosts) {
+//        listOf("All") + allPosts.map { it.type }.distinct().filter { it.isNotBlank() }
+//    }
 
     // 3. Track which tab is currently selected
     var selectedTabIndex by remember { mutableStateOf(0) }
@@ -109,209 +112,221 @@ fun MarketScreen(
         )
     ) {
 
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Storefront,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(28.dp)
-                            )
-                            Text(
-                                "AgriMarket",
-                                style = MaterialTheme.typography.titleLarge.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 24.sp
-                                )
-                            )
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        titleContentColor = MaterialTheme.colorScheme.onSurface
-                    ),
-                    modifier = Modifier.shadow(4.dp)
-                )
-            },
-            content = { paddingValues ->
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues)
-                        .background(
-                            brush = Brush.verticalGradient(
-                                colors = listOf(
-                                    MaterialTheme.colorScheme.background,
-                                    MaterialTheme.colorScheme.surface.copy(alpha = 0.3f)
-                                )
-                            )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.background,
+                            MaterialTheme.colorScheme.surface.copy(alpha = 0.3f)
                         )
-                ) {
+                    )
+                )
+        ) {
 
-                    // Enhanced TabRow with gradient and better styling
-                    Card(
+            // Beautiful Top Bar
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .shadow(4.dp),
+                shape = RoundedCornerShape(bottomStart = 0.dp, bottomEnd = 0.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBackIosNew,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
-                        shape = RoundedCornerShape(25.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-                    ) {
-                        // ——— Dynamic TabRow ———
-                        TabRow(
-                            selectedTabIndex = selectedTabIndex,
-                            containerColor = MaterialTheme.colorScheme.surface,
-                            contentColor = MaterialTheme.colorScheme.primary,
-                            indicator = { tabPositions ->
-                                if (selectedTabIndex < tabPositions.size) {
-                                    Box(
-                                        modifier = Modifier
-                                            .tabIndicatorOffset(tabPositions[selectedTabIndex])
-                                            .height(4.dp)
-                                            .clip(RoundedCornerShape(2.dp))
-                                            .background(
-                                                brush = Brush.horizontalGradient(
-                                                    colors = listOf(
-                                                        MaterialTheme.colorScheme.primary,
-                                                        MaterialTheme.colorScheme.tertiary
-                                                    )
-                                                )
-                                            )
-                                    )
-                                }
+                            .clip(CircleShape)
+                            .clickable {
+                                navController.navigateUp()
                             }
-                        ) {
-                            categories.forEachIndexed { index, category ->
-                                Tab(
-                                    selected = (selectedTabIndex == index),
-                                    onClick = { selectedTabIndex = index },
-                                    modifier = Modifier.padding(vertical = 12.dp),
-                                    text = {
-                                        Text(
-                                            category,
-                                            style = MaterialTheme.typography.bodyMedium.copy(
-                                                fontWeight = if (selectedTabIndex == index)
-                                                    FontWeight.SemiBold
-                                                else
-                                                    FontWeight.Medium,
-                                                fontSize = 14.sp
+                            .size(24.dp)
+                    )
+
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    Icon(
+                        imageVector = Icons.Default.Storefront,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(28.dp)
+                    )
+                    Text(
+                        "AgriMarket",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 24.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    )
+                }
+            }
+
+            // Enhanced TabRow with gradient and better styling
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                shape = RoundedCornerShape(25.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+            ) {
+                // ——— Dynamic TabRow ———
+                TabRow(
+                    selectedTabIndex = selectedTabIndex,
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    contentColor = MaterialTheme.colorScheme.primary,
+                    indicator = { tabPositions ->
+                        if (selectedTabIndex < tabPositions.size) {
+                            Box(
+                                modifier = Modifier
+                                    .tabIndicatorOffset(tabPositions[selectedTabIndex])
+                                    .height(4.dp)
+                                    .clip(RoundedCornerShape(2.dp))
+                                    .background(
+                                        brush = Brush.horizontalGradient(
+                                            colors = listOf(
+                                                MaterialTheme.colorScheme.primary,
+                                                MaterialTheme.colorScheme.tertiary
                                             )
                                         )
-                                    }
-                                )
-                            }
+                                    )
+                            )
                         }
                     }
-
-                    //Spacer(modifier = Modifier.height(8.dp))
-
-                    // ——— Loading / Empty / Grid ———
-                    when {
-                        isLoading -> {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                                ) {
-                                    CircularProgressIndicator(
-                                        color = MaterialTheme.colorScheme.primary,
-                                        strokeWidth = 3.dp,
-                                        modifier = Modifier.size(48.dp)
-                                    )
-                                    Text(
-                                        "Loading fresh products...",
-                                        style = MaterialTheme.typography.bodyMedium.copy(
-                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                                        )
-                                    )
-                                }
-                            }
-                        }
-
-                        displayedPosts.isEmpty() -> {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Inventory,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(64.dp),
-                                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
-                                    )
-                                    Text(
-                                        text = if (selectedTabIndex == 0)
-                                            "No posts available"
+                ) {
+                    categories.forEachIndexed { index, category ->
+                        Tab(
+                            selected = (selectedTabIndex == index),
+                            onClick = { selectedTabIndex = index },
+                            modifier = Modifier.padding(vertical = 12.dp),
+                            text = {
+                                Text(
+                                    category,
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        fontWeight = if (selectedTabIndex == index)
+                                            FontWeight.SemiBold
                                         else
-                                            "No posts in “${categories[selectedTabIndex]}”",
-                                        style = MaterialTheme.typography.bodyLarge.copy(
-                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                                            fontWeight = FontWeight.Medium
-                                        )
+                                            FontWeight.Medium,
+                                        fontSize = 14.sp
                                     )
-                                    Text(
-                                        "Check back later for fresh products!",
-                                        style = MaterialTheme.typography.bodyMedium.copy(
-                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                                        )
-                                    )
-                                }
+                                )
                             }
-                        }
+                        )
+                    }
+                }
+            }
 
-                        else -> {
-                            LazyColumn(
-                                contentPadding = PaddingValues(vertical = 8.dp),
-                                verticalArrangement = Arrangement.spacedBy(16.dp),
-                                modifier = Modifier.fillMaxSize()
-                            ) {
-                                items(displayedPosts) { post ->
-                                    MarketPostCard(
-                                        post = post,
-                                        farmProfile = farmProfiles[post.farmId],         // pass the actual FarmProfile
-                                        onPostClick = {
-                                            marketViewModel.selectPost(post.postId)
-                                            onPostClick(post)
-                                        },
-                                        onProfileClick = {
-                                            marketViewModel.selectFarm(post.farmId)
-                                            onProfileClick(post.farmId)
-                                        },
-                                        onFollowClick = { farmId ->
-                                            marketViewModel.onToggleFollow(farmId)
-                                            onFollowClick(farmId)
-                                        },
-                                        onLikeClick = { postId ->
-                                            marketViewModel.onToggleLike(postId)
-                                            onLikeClick(postId)
-                                        },
-                                        onCommentClick = { postId ->
-                                            onCommentClick(postId)
-                                        },
-                                        onBookmarkClick = { postId ->
-                                            marketViewModel.onToggleBookmark(postId)
-                                            onBookmarkClick(postId)
-                                        }
-                                    )
+            // ——— Loading / Empty / Grid ———
+            when {
+                isLoading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            CircularProgressIndicator(
+                                color = MaterialTheme.colorScheme.primary,
+                                strokeWidth = 3.dp,
+                                modifier = Modifier.size(48.dp)
+                            )
+                            Text(
+                                "Loading fresh products...",
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                                )
+                            )
+                        }
+                    }
+                }
+
+                displayedPosts.isEmpty() -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Inventory,
+                                contentDescription = null,
+                                modifier = Modifier.size(64.dp),
+                                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                            )
+                            Text(
+                                text = if (selectedTabIndex == 0)
+                                    "No posts available"
+                                else
+                                    "No posts in “${categories[selectedTabIndex]}”",
+                                style = MaterialTheme.typography.bodyLarge.copy(
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                    fontWeight = FontWeight.Medium
+                                )
+                            )
+                            Text(
+                                "Check back later for fresh products!",
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                                )
+                            )
+                        }
+                    }
+                }
+
+                else -> {
+                    LazyColumn(
+                        contentPadding = PaddingValues(vertical = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        items(displayedPosts) { post ->
+                            MarketPostCard(
+                                post = post,
+                                farmProfile = farmProfiles[post.farmId],
+                                onPostClick = {
+                                    marketViewModel.selectPost(post.postId)
+                                    onPostClick(post)
+                                },
+                                onProfileClick = {
+                                    marketViewModel.selectFarm(post.farmId)
+                                    onProfileClick(post.farmId)
+                                },
+                                onFollowClick = { farmId ->
+                                    marketViewModel.onToggleFollow(farmId)
+                                    onFollowClick(farmId)
+                                },
+                                onLikeClick = { postId ->
+                                    marketViewModel.onToggleLike(postId)
+                                    onLikeClick(postId)
+                                },
+                                onCommentClick = { postId ->
+                                    onCommentClick(postId)
+                                },
+                                onBookmarkClick = { postId ->
+                                    marketViewModel.onToggleBookmark(postId)
+                                    onBookmarkClick(postId)
                                 }
-                            }
+                            )
                         }
                     }
                 }
             }
-        )
+        }
     }
 }
 

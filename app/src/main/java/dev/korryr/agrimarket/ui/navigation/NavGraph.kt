@@ -255,7 +255,9 @@ fun NavGraph(
             }
 
             composable(BottomScreens.MarketPlace.route) {
-                MarketScreen()
+                MarketScreen(
+                    navController = navController
+                )
             }
             composable(BottomScreens.Message.route) {
                 MessageScreen()
