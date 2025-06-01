@@ -9,9 +9,12 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -154,7 +157,7 @@ fun MarketScreen(
                             .size(24.dp)
                     )
 
-                    Spacer(modifier = Modifier.weight(1f))
+                    Spacer(modifier = Modifier.width(12.dp))
 
                     Icon(
                         imageVector = Icons.Default.Storefront,
@@ -181,47 +184,75 @@ fun MarketScreen(
                 shape = RoundedCornerShape(25.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
             ) {
-                // ——— Dynamic TabRow ———
-                TabRow(
-                    selectedTabIndex = selectedTabIndex,
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    contentColor = MaterialTheme.colorScheme.primary,
-                    indicator = { tabPositions ->
-                        if (selectedTabIndex < tabPositions.size) {
-                            Box(
-                                modifier = Modifier
-                                    .tabIndicatorOffset(tabPositions[selectedTabIndex])
-                                    .height(4.dp)
-                                    .clip(RoundedCornerShape(2.dp))
-                                    .background(
-                                        brush = Brush.horizontalGradient(
-                                            colors = listOf(
-                                                MaterialTheme.colorScheme.primary,
-                                                MaterialTheme.colorScheme.tertiary
-                                            )
-                                        )
-                                    )
-                            )
-                        }
-                    }
+
+                // Beautiful Scrollable Category Chips
+                LazyRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    categories.forEachIndexed { index, category ->
-                        Tab(
-                            selected = (selectedTabIndex == index),
+                    items(categories.size) { index ->
+                        val category = categories[index]
+                        val isSelected = selectedTabIndex == index
+
+                        FilterChip(
+                            selected = isSelected,
                             onClick = { selectedTabIndex = index },
-                            modifier = Modifier.padding(vertical = 12.dp),
-                            text = {
+                            label = {
                                 Text(
-                                    category,
+                                    text = category,
                                     style = MaterialTheme.typography.bodyMedium.copy(
-                                        fontWeight = if (selectedTabIndex == index)
-                                            FontWeight.SemiBold
-                                        else
-                                            FontWeight.Medium,
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                                         fontSize = 14.sp
-                                    )
+                                    ),
+                                    maxLines = 1
                                 )
-                            }
+                            },
+                            modifier = Modifier
+                                .height(40.dp)
+                                .shadow(
+                                    elevation = if (isSelected) 8.dp else 2.dp,
+                                    shape = RoundedCornerShape(20.dp)
+                                ),
+                            shape = RoundedCornerShape(20.dp),
+                            colors = FilterChipDefaults.filterChipColors(
+                                containerColor = if (isSelected) {
+                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                                } else {
+                                    MaterialTheme.colorScheme.surface
+                                },
+                                selectedContainerColor = MaterialTheme.colorScheme.primary,
+                                labelColor = if (isSelected) {
+                                    MaterialTheme.colorScheme.onPrimary
+                                } else {
+                                    MaterialTheme.colorScheme.onSurface
+                                },
+                                selectedLabelColor = MaterialTheme.colorScheme.onPrimary
+                            ),
+                            border = if (!isSelected) {
+                                FilterChipDefaults.filterChipBorder(
+                                    borderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                                    selectedBorderColor = Color.Transparent,
+                                    borderWidth = 1.dp,
+                                    enabled = true,
+                                    selected = true,
+                                    //disabledBorderColor = Color.Transparent,
+                                    // disabledSelectedBorderColor =Color.Transparent,
+                                    //selectedBorderWidth = 3.dp
+                                )
+                            } else null,
+                            leadingIcon = if (isSelected) {
+                                {
+                                    Icon(
+                                        imageVector = Icons.Default.Check,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(18.dp),
+                                        tint = MaterialTheme.colorScheme.onPrimary
+                                    )
+                                }
+                            } else null
                         )
                     }
                 }
@@ -371,19 +402,6 @@ private fun MarketPostCard(
     val commentCount by marketViewModel.selectedCommentCount.collectAsState()
     val bookmarked by marketViewModel.selectedBookmarked.collectAsState()
     val followingFarm by marketViewModel.selectedUserFollows.collectAsState()
-
-//    // 3) Real-time like count and whether current user has liked
-//    val likeCount by rememberLikeCount(post.postId)
-//    val userLiked by rememberUserLiked(post.postId)
-//
-//    // 4) Real-time comment count
-//    val commentCount by rememberCommentCount(post.postId)
-//
-//    // 5) Real-time bookmark state
-//    val bookmarked by rememberBookmarked(post.postId)
-//
-//    // 6) Real-time follow state (does current user follow this farm?)
-//    val followingFarm by rememberUserFollows(post.farmId)
 
     Card(
         modifier = Modifier
