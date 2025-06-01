@@ -259,23 +259,27 @@ fun rememberFollowerCount(farmId: String): State<Int> {
 fun rememberUserFollows(farmId: String): State<Boolean> {
     val firestore = FirebaseFirestore.getInstance()
     val currentUid = FirebaseAuth.getInstance().currentUser?.uid
-    return produceState(initialValue = false, key1 = farmId, key2 = currentUid) {
+    val userFollowsState = remember { mutableStateOf(false) }
+
+    DisposableEffect(farmId, currentUid) {
         if (currentUid == null) {
-            value = false
-            return@produceState
+            userFollowsState.value = false
+            onDispose { }
+        } else {
+            val subscription = firestore
+                .collection("users")
+                .document(currentUid)
+                .collection("following")
+                .document(farmId)
+                .addSnapshotListener { snapshot, error ->
+                    if (error != null) return@addSnapshotListener
+                    userFollowsState.value = (snapshot != null && snapshot.exists())
+                }
+            onDispose { subscription.remove() }
         }
-        // Check if a document exists at `users/{currentUid}/following/{farmId}`
-        val subscription = firestore
-            .collection("users")
-            .document(currentUid)
-            .collection("following")
-            .document(farmId)
-            .addSnapshotListener { snapshot, error ->
-                if (error != null) return@addSnapshotListener
-                value = (snapshot != null && snapshot.exists())
-            }
-        awaitDispose { subscription.remove() }
     }
+
+    return userFollowsState
 }
 
 ///////////////////////////////////////////////////////////////////////////
