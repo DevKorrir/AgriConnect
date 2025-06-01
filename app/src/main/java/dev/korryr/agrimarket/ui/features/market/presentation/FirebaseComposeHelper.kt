@@ -148,20 +148,22 @@ fun toggleLike(
 @Composable
 fun rememberCommentCount(postId: String): State<Int> {
     val firestore = FirebaseFirestore.getInstance()
-    return produceState(initialValue = 0, key1 = postId) {
+    val commentCountState = remember { mutableStateOf(0) }
+
+    DisposableEffect(postId) {
         val subscription = firestore
             .collection("farm_posts")
             .document(postId)
             .collection("comments")
             .addSnapshotListener { snapshot, error ->
-                if (error != null) {
-                    //log error if possible
-                    return@addSnapshotListener
-                }
-                value = snapshot?.size() ?: 0
+                if (error != null) return@addSnapshotListener
+                commentCountState.value = snapshot?.size() ?: 0
             }
-        awaitDispose { subscription.remove() }
+
+        onDispose { subscription.remove() }
     }
+
+    return commentCountState
 }
 
 ///////////////////////////////////////////////////////////////////////////
