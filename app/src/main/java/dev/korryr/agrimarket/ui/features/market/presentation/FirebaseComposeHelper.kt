@@ -1,15 +1,16 @@
 package dev.korryr.agrimarket.ui.features.market.presentation
 
-import android.annotation.SuppressLint
-import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.produceState
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.*
-import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestore
 import dev.korryr.agrimarket.ui.features.farm.data.model.FarmProfile
-import dev.korryr.agrimarket.ui.features.posts.dataModel.dataClass.FarmPost
-import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.tasks.await
+import java.util.EventListener
 
 ///////////////////////////////////////////////////////////////////////////
 // -------------- 1) Fetch a single FarmProfile by farmId --------------
@@ -22,22 +23,24 @@ fun rememberFarmProfile(
 ): State<FarmProfile?> {
     val firestore = FirebaseFirestore.getInstance()
     return produceState<FarmProfile?>(initialValue = null, key1 = farmId) {
+        val listener = EventListener<DocumentSnapshot> { snapshot, error ->
+            if (error != null) {
+                //log error if possible
+                return@EventListener
+            }
+            if (snapshot != null && snapshot.exists()) {
+                val profile = snapshot.toObject(FarmProfile::class.java)
+                value = profile
+            } else {
+                value = null
+            }
+        }
+
         //listen for changes to document"farm_profile/{farmId}"
         val subscription = firestore
             .collection("farm_profile")
             .document(farmId)
-            .addSnapshotListener { snapshot, error ->
-                if (error != null) {
-                    //log error if possible
-                    return@addSnapshotListener
-                }
-                if (snapshot != null && snapshot.exists()) {
-                    val profile = snapshot.toObject(FarmProfile::class.java)
-                    value = profile
-                } else {
-                    value = null
-                }
-            }
+            .addSnapshotListener (listener)
         awaitClose { subscription.remove() }
     }
 }
@@ -64,7 +67,6 @@ fun rememberLikeCount(postId: String): State<Int> {
             }
         awaitClose { subscription.remove() }
     }
-
 }
 
 ///////////////////////////////////////////////////////////////////////////

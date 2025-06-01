@@ -50,6 +50,16 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import dev.korryr.agrimarket.ui.features.farm.data.model.FarmProfile
+import dev.korryr.agrimarket.ui.features.market.presentation.rememberFarmProfile
+import dev.korryr.agrimarket.ui.features.market.presentation.rememberLikeCount
+import dev.korryr.agrimarket.ui.features.market.presentation.rememberUserFollows
+import dev.korryr.agrimarket.ui.features.market.presentation.rememberUserLiked
+import dev.korryr.agrimarket.ui.features.market.presentation.toggleFollow
+import java.util.Calendar
+import dev.korryr.agrimarket.ui.features.market.presentation.rememberFollowerCount
+import dev.korryr.agrimarket.ui.features.market.presentation.rememberBookmarked
+import dev.korryr.agrimarket.ui.features.market.presentation.rememberCommentCount
+import dev.korryr.agrimarket.ui.features.market.presentation.toggleLike
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -282,7 +292,6 @@ fun MarketScreen(
                                         onLikeClick = onLikeClick,
                                         onCommentClick = onCommentClick,
                                         onBookmarkClick = onBookmarkClick,
-                                        profile = FarmProfile()
                                     )
                                 }
                             }
@@ -303,18 +312,37 @@ private fun MarketPostCard(
     onLikeClick: (String) -> Unit,
     onCommentClick: (String) -> Unit,
     onBookmarkClick: (String) -> Unit,
-    profile: FarmProfile,
 ) {
+    // fetch farmer profile in real time
+    val profileState by rememberFarmProfile(post.farmId)
+    val profileName = profileState?.farmName ?: "sijui farmer"
+    val profileImageUrl = profileState?.imageUrl ?: ""
 
-//    // Generate mock data for demo purposes
-//    val mockUserName = remember { generateMockUserName() }
-//    //val mockProfileImage = remember { generateMockProfileImage() }
-//    val mockLikes = remember { Random.nextInt(1, 150) }
-//    val mockComments = remember { Random.nextInt(0, 45) }
-//    val mockDaysAgo = remember { Random.nextInt(1, 30) }
-//    var isLiked by remember { mutableStateOf(false) }
-//    var isBookmarked by remember { mutableStateOf(false) }
-//    var isFollowing by remember { mutableStateOf(false) }
+    // 2) Compute “days ago” from post.timestamp (if you stored a Firestore Timestamp)
+    //    If your FarmPost has a `timestamp: com.google.firebase.Timestamp` field, do:
+    //    val daysAgo by rememberDaysAgo(post.timestamp)
+    //    For simplicity, here we’ll just show a placeholder if timestamp is missing.
+    val daysAgoText = profileState?.let {
+        post.timestamp.let { ts ->
+            val now = Calendar.getInstance().timeInMillis
+            val then = ts.toDate().time
+            val diffdays = ((now - then) / (1000 * 60 * 60 * 24)).toInt()
+            "$diffdays d ago"
+        } ?: ""
+    } ?: ""
+
+    // 3) Real-time like count and whether current user has liked
+    val likeCount by rememberLikeCount(post.postId)
+    val userLiked by rememberUserLiked(post.postId)
+
+    // 4) Real-time comment count
+    val commentCount by rememberCommentCount(post.postId)
+
+    // 5) Real-time bookmark state
+    val bookmarked by rememberBookmarked(post.postId)
+
+    // 6) Real-time follow state (does current user follow this farm?)
+    val followingFarm by rememberUserFollows(post.farmId)
 
     Card(
         modifier = Modifier
@@ -348,7 +376,7 @@ private fun MarketPostCard(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     modifier = Modifier
                         .weight(1f)
-                        .clickable { onProfileClick(mockUserName) }
+                        .clickable { onProfileClick(post.farmId) }
                 ) {
                     // Profile Image with gradient border
                     Box(
@@ -365,27 +393,45 @@ private fun MarketPostCard(
                             )
                             .padding(2.dp)
                     ) {
-                        Image(
-                            painter = rememberAsyncImagePainter(profile.imageUrl),
-                            contentDescription = "Profile",
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.surface)
-                        )
+                        if (profileImageUrl.isNotBlank()) {
+                            Image(
+                                painter = rememberAsyncImagePainter(profileImageUrl),
+                                contentDescription = "Profile",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.surface)
+                            )
+                        } else {
+                            // If no profile image URL, show a placeholder circle
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.PersonAdd,
+                                    contentDescription = "No Profile",
+                                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+                        }
                     }
 
                     Column {
                         Text(
-                            text = mockUserName,
+                            text = profileName,
                             style = MaterialTheme.typography.titleSmall.copy(
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 16.sp
                             )
                         )
                         Text(
-                            text = "${mockDaysAgo}d ago",
+                            text = daysAgoText,
                             style = MaterialTheme.typography.bodySmall.copy(
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                                 fontSize = 12.sp
@@ -394,24 +440,24 @@ private fun MarketPostCard(
                     }
                 }
 
-                // Follow Button
+                // Follow Button / unfollow
                 OutlinedButton(
                     onClick = {
-                        isFollowing = !isFollowing
-                        onFollowClick(mockUserName)
+                        toggleFollow(post.farmId)
+                        onFollowClick(post.farmId)
                     },
                     modifier = Modifier.height(36.dp),
                     shape = RoundedCornerShape(18.dp),
-                    border = if (isFollowing) null else BorderStroke(
+                    border = if (followingFarm) null else BorderStroke(
                         1.dp,
                         MaterialTheme.colorScheme.primary
                     ),
                     colors = ButtonDefaults.outlinedButtonColors(
-                        containerColor = if (isFollowing)
+                        containerColor = if (followingFarm)
                             MaterialTheme.colorScheme.primary
                         else
                             Color.Transparent,
-                        contentColor = if (isFollowing)
+                        contentColor = if (followingFarm)
                             MaterialTheme.colorScheme.onPrimary
                         else
                             MaterialTheme.colorScheme.primary
@@ -422,12 +468,12 @@ private fun MarketPostCard(
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Icon(
-                            imageVector = if (isFollowing) Icons.Default.Check else Icons.Default.PersonAdd,
+                            imageVector = if (followingFarm) Icons.Default.Check else Icons.Default.PersonAdd,
                             contentDescription = null,
                             modifier = Modifier.size(16.dp)
                         )
                         Text(
-                            if (isFollowing) "Following" else "Follow",
+                            if (followingFarm) "Following" else "Follow",
                             style = MaterialTheme.typography.bodySmall.copy(
                                 fontWeight = FontWeight.SemiBold,
                                 fontSize = 12.sp
@@ -510,7 +556,7 @@ private fun MarketPostCard(
                 }
             }
 
-            // Action Buttons Row
+            // Action Buttons Row {like, comment, share, boorkmark }
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -522,25 +568,25 @@ private fun MarketPostCard(
                     horizontalArrangement = Arrangement.spacedBy(20.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Like Button
+                    // Like Button =count
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                         modifier = Modifier.clickable {
-                            isLiked = !isLiked
-                            onLikeClick(post.description)
+                            toggleLike(post.postId)
+                            onLikeClick(post.postId)
                         }
                     ) {
                         Icon(
-                            imageVector = if (isLiked) Icons.Default.Favorite else Icons.Outlined.FavoriteBorder,
+                            imageVector = if (userLiked) Icons.Default.Favorite else Icons.Outlined.FavoriteBorder,
                             contentDescription = "Like",
-                            tint = if (isLiked) Color.Red else MaterialTheme.colorScheme.onSurface.copy(
+                            tint = if (userLiked) Color.Red else MaterialTheme.colorScheme.onSurface.copy(
                                 alpha = 0.7f
                             ),
                             modifier = Modifier.size(24.dp)
                         )
                         Text(
-                            text = if (isLiked) "${mockLikes + 1}" else "$mockLikes",
+                            text = "$likeCount",
                             style = MaterialTheme.typography.bodySmall.copy(
                                 fontWeight = FontWeight.Medium,
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
@@ -561,7 +607,7 @@ private fun MarketPostCard(
                             modifier = Modifier.size(24.dp)
                         )
                         Text(
-                            text = "$mockComments",
+                            text = "$commentCount",
                             style = MaterialTheme.typography.bodySmall.copy(
                                 fontWeight = FontWeight.Medium,
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
@@ -582,16 +628,16 @@ private fun MarketPostCard(
 
                 // Bookmark Button
                 Icon(
-                    imageVector = if (isBookmarked) Icons.Default.Bookmark else Icons.Outlined.BookmarkBorder,
+                    imageVector = if (bookmarked) Icons.Default.Bookmark else Icons.Outlined.BookmarkBorder,
                     contentDescription = "Bookmark",
-                    tint = if (isBookmarked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(
-                        alpha = 0.7f
-                    ),
+                    tint = if (bookmarked) MaterialTheme.colorScheme.primary
+                    else
+                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                     modifier = Modifier
                         .size(24.dp)
                         .clickable {
-                            isBookmarked = !isBookmarked
-                            onBookmarkClick(post.description)
+                            toogleBookmark(post.postId)
+                            onBookmarkClick(post.postId)
                         }
                 )
             }
@@ -599,7 +645,7 @@ private fun MarketPostCard(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Product Details
+            // Product Details (descriptio price and quantity)
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
