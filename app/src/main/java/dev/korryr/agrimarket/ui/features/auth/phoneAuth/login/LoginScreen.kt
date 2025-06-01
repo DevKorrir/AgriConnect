@@ -464,7 +464,7 @@ fun isValidEmail(email: String): Boolean {
 }
 
 // Validation function
-private fun validateForm(
+private fun validateFormt(
     email: String,
     password: String,
     setEmailError: (String) -> Unit,
