@@ -10,6 +10,6 @@ data class FarmPost(
     val quantity: Int = 0,
     val unit: String = "kg", // kg , litres
     val size: String = "1 acre",
-    val timestamp: com.google.firebase.Timestamp? = null
+    val timestamp: Long = 0L
     //val timestamp: Long = System.currentTimeMillis()
 )
