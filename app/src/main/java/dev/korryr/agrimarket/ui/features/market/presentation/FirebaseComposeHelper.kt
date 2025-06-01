@@ -234,23 +234,21 @@ fun toggleBookMark(
 @Composable
 fun rememberFollowerCount(farmId: String): State<Int> {
     val firestore = FirebaseFirestore.getInstance()
-    return produceState(initialValue = 0, key1 = farmId) {
+    val followerCountState = remember { mutableStateOf(0) }
 
+    DisposableEffect(farmId) {
+        // Example: count how many user documents have “following” array containing farmId
         val subscription = firestore
             .collection("users")
             .whereArrayContains("following", farmId)
-        // or if you store in subcollection:
-        // .collection("users").document(farmerUid).collection("followers")
-            .addSnapshotListener{ snapshot, error ->
+            .addSnapshotListener { snapshot, error ->
                 if (error != null) return@addSnapshotListener
-                value = snapshot?.size() ?:0
-
+                followerCountState.value = snapshot?.size() ?: 0
             }
-        awaitDispose { subscription.remove() }
-
+        onDispose { subscription.remove() }
     }
 
-
+    return followerCountState
 }
 
 ///////////////////////////////////////////////////////////////////////////
