@@ -29,7 +29,7 @@ fun rememberFarmProfile(
     DisposableEffect(farmId) {
         // Listen for changes at "farm_profiles/{farmId}"
         val subscription = firestore
-            .collection("farm_profiles")    // <- make sure this matches your actual collection name
+            .collection("farms")
             .document(farmId)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
@@ -57,20 +57,23 @@ fun rememberFarmProfile(
 @Composable
 fun rememberLikeCount(postId: String): State<Int> {
     val firestore = FirebaseFirestore.getInstance()
-    return produceState(initialValue = 0, key1 = postId) {
+    val likeCountState = remember { mutableStateOf(0) }
+
+    DisposableEffect(postId) {
+        // Listen to "farm_posts/{postId}/likes"
         val subscription = firestore
-            .collection("farms")
+            .collection("farm_posts")       // <- correct collection for posts
             .document(postId)
             .collection("likes")
             .addSnapshotListener { snapshot, error ->
-                if (error != null) {
-                    //log error if possible
-                    return@addSnapshotListener
-                }
-                value = snapshot?.size() ?: 0
+                if (error != null) return@addSnapshotListener
+                likeCountState.value = snapshot?.size() ?: 0
             }
-        awaitDispose { subscription.remove() }
+
+        onDispose { subscription.remove() }
     }
+
+    return likeCountState
 }
 
 ///////////////////////////////////////////////////////////////////////////
