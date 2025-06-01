@@ -92,7 +92,8 @@ class FarmPostViewModel @Inject constructor(
                     description = description,
                     price = price,
                     quantity = quantity,
-                    size = size
+                    size = size,
+                    timestamp  = System.currentTimeMillis()
                 )
 
                 // 6. Delegate to your repository to write this FarmPost into Firestore
