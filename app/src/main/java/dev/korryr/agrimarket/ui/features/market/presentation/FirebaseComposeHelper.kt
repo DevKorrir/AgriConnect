@@ -176,26 +176,27 @@ fun rememberBookmarked(
 ): State<Boolean> {
     val firestore = FirebaseFirestore.getInstance()
     val currentUser = FirebaseAuth.getInstance().currentUser?.uid
-    return produceState(initialValue = false, key1 = postId, key2 = currentUser) {
+    val bookmarkedState = remember { mutableStateOf(false) }
+
+    DisposableEffect(postId, currentUser) {
         if (currentUser == null) {
-            value = false
-            return@produceState
-        }
-        val subscription = firestore
-            .collection("users")
-            .document(currentUser)
-            .collection("bookmarks")
-            .document(postId)
-            .addSnapshotListener { snapshot, error ->
-                if (error != null) {
-                    //log error if possible
-                    return@addSnapshotListener
+            bookmarkedState.value = false
+            onDispose { }
+        } else {
+            val subscription = firestore
+                .collection("users")
+                .document(currentUser)
+                .collection("bookmarks")
+                .document(postId)
+                .addSnapshotListener { snapshot, error ->
+                    if (error != null) return@addSnapshotListener
+                    bookmarkedState.value = (snapshot != null && snapshot.exists())
                 }
-                // if the doc exists, the user has bookmarked the post
-                value = (snapshot != null && snapshot.exists())
-            }
-        awaitDispose { subscription.remove() }
+            onDispose { subscription.remove() }
+        }
     }
+
+    return bookmarkedState
 }
 
 ///////////////////////////////////////////////////////////////////////////
