@@ -1,48 +1,52 @@
 package dev.korryr.agrimarket.ui.features.market.presentation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.EventListener
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import dev.korryr.agrimarket.ui.features.farm.data.model.FarmProfile
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.tasks.await
-import java.util.EventListener
 
 ///////////////////////////////////////////////////////////////////////////
 // -------------- 1) Fetch a single FarmProfile by farmId --------------
 ///////////////////////////////////////////////////////////////////////////
 
-//@SuppressLint("ProduceStateDoesNotAssignValue")
 @Composable
 fun rememberFarmProfile(
     farmId: String
 ): State<FarmProfile?> {
     val firestore = FirebaseFirestore.getInstance()
-    return produceState<FarmProfile?>(initialValue = null, key1 = farmId) {
-        val listener = EventListener<DocumentSnapshot> { snapshot, error ->
-            if (error != null) {
-                //log error if possible
-                return@EventListener
-            }
-            if (snapshot != null && snapshot.exists()) {
-                val profile = snapshot.toObject(FarmProfile::class.java)
-                value = profile
-            } else {
-                value = null
-            }
-        }
+    val profileState = remember { mutableStateOf<FarmProfile?>(null) }
 
-        //listen for changes to document"farm_profile/{farmId}"
+    DisposableEffect(farmId) {
+        // Listen for changes at "farm_profiles/{farmId}"
         val subscription = firestore
-            .collection("farm_profile")
+            .collection("farm_profiles")    // <- make sure this matches your actual collection name
             .document(farmId)
-            .addSnapshotListener (listener)
-        awaitClose { subscription.remove() }
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    // You can log error.message if you want
+                    return@addSnapshotListener
+                }
+                if (snapshot != null && snapshot.exists()) {
+                    profileState.value = snapshot.toObject(FarmProfile::class.java)
+                } else {
+                    profileState.value = null
+                }
+            }
+
+        onDispose { subscription.remove() }
     }
+
+    return profileState
 }
 
 
@@ -65,7 +69,7 @@ fun rememberLikeCount(postId: String): State<Int> {
                 }
                 value = snapshot?.size() ?: 0
             }
-        awaitClose { subscription.remove() }
+        awaitDispose { subscription.remove() }
     }
 }
 
@@ -97,14 +101,13 @@ fun rememberUserLiked(
                 // if the doc exists, the user has liked the post
                 value = (snapshot != null && snapshot.exists())
             }
-        awaitClose { subscription.remove() }
+        awaitDispose { subscription.remove() }
     }
 }
 ///////////////////////////////////////////////////////////////////////////
 // -------------- 4) Toggle “like” for current user on a post --------------
 ///////////////////////////////////////////////////////////////////////////
 
-@Composable
 fun toggleLike(
     postId: String
 ) {
@@ -151,7 +154,7 @@ fun rememberCommentCount(postId: String): State<Int> {
                 }
                 value = snapshot?.size() ?: 0
             }
-        awaitClose { subscription.remove() }
+        awaitDispose { subscription.remove() }
     }
 }
 
@@ -183,7 +186,7 @@ fun rememberBookmarked(
                 // if the doc exists, the user has bookmarked the post
                 value = (snapshot != null && snapshot.exists())
             }
-        awaitClose { subscription.remove() }
+        awaitDispose { subscription.remove() }
     }
 }
 
@@ -191,7 +194,6 @@ fun rememberBookmarked(
 // -------------- 7) Toggle “bookmark” for current user on a post -------------
 ///////////////////////////////////////////////////////////////////////////
 
-@Composable
 fun toggleBookMark(
     postId: String
 ) {
@@ -235,7 +237,7 @@ fun rememberFollowerCount(farmId: String): State<Int> {
                 value = snapshot?.size() ?:0
 
             }
-        awaitClose { subscription.remove() }
+        awaitDispose { subscription.remove() }
 
     }
 
@@ -265,7 +267,7 @@ fun rememberUserFollows(farmId: String): State<Boolean> {
                 if (error != null) return@addSnapshotListener
                 value = (snapshot != null && snapshot.exists())
             }
-        awaitClose { subscription.remove() }
+        awaitDispose { subscription.remove() }
     }
 }
 

@@ -55,11 +55,13 @@ import dev.korryr.agrimarket.ui.features.market.presentation.rememberLikeCount
 import dev.korryr.agrimarket.ui.features.market.presentation.rememberUserFollows
 import dev.korryr.agrimarket.ui.features.market.presentation.rememberUserLiked
 import dev.korryr.agrimarket.ui.features.market.presentation.toggleFollow
+import dev.korryr.agrimarket.ui.features.market.presentation.toggleBookMark
 import java.util.Calendar
 import dev.korryr.agrimarket.ui.features.market.presentation.rememberFollowerCount
 import dev.korryr.agrimarket.ui.features.market.presentation.rememberBookmarked
 import dev.korryr.agrimarket.ui.features.market.presentation.rememberCommentCount
 import dev.korryr.agrimarket.ui.features.market.presentation.toggleLike
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -323,7 +325,7 @@ private fun MarketPostCard(
     //    val daysAgo by rememberDaysAgo(post.timestamp)
     //    For simplicity, here we’ll just show a placeholder if timestamp is missing.
     val daysAgoText = profileState?.let {
-        post.timestamp.let { ts ->
+        post.timestamp?.let { ts ->
             val now = Calendar.getInstance().timeInMillis
             val then = ts.toDate().time
             val diffdays = ((now - then) / (1000 * 60 * 60 * 24)).toInt()
@@ -636,7 +638,7 @@ private fun MarketPostCard(
                     modifier = Modifier
                         .size(24.dp)
                         .clickable {
-                            toogleBookmark(post.postId)
+                            toggleBookMark(post.postId)
                             onBookmarkClick(post.postId)
                         }
                 )

@@ -8,7 +8,8 @@ data class FarmPost(
     val type : String = "", //eg livestock. crops
     val price: Double = 0.0,
     val quantity: Int = 0,
-    val unit: String = "", // kg , litres
-    val size: String = "",
-    val timestamp: Long = System.currentTimeMillis()
+    val unit: String = "kg", // kg , litres
+    val size: String = "1 acre",
+    val timestamp: com.google.firebase.Timestamp? = null
+    //val timestamp: Long = System.currentTimeMillis()
 )
