@@ -84,8 +84,12 @@ fun MarketScreen(
     // 2. Observe the dynamic list of types
     //    Prepend "All" so that tab 0 == "All"
     val rawTypes by marketViewModel.allTypes.collectAsState()
-    val categories = remember(rawTypes) {
-        listOf("All") + rawTypes
+//    val categories = remember(rawTypes) {
+//        listOf("All") + rawTypes
+//    }
+    // If you want tabs, create your category list from allPosts.map { it.type }.distinct(), etc.
+    val categories = remember(allPosts) {
+        listOf("All") + allPosts.map { it.type }.distinct().filter { it.isNotBlank() }
     }
 
     // 3. Track which tab is currently selected
@@ -101,6 +105,9 @@ fun MarketScreen(
             allPosts.filter { it.type.equals(chosenType, ignoreCase = true) }
         }
     }
+
+    // b) Observe all farm profiles as a Map<farmId, FarmProfile>
+    val farmProfiles by marketViewModel.allFarmProfiles.collectAsState()
 
     LaunchedEffect(Unit) {
         visible = true
