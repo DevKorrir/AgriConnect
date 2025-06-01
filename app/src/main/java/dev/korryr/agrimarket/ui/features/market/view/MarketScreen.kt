@@ -10,11 +10,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import kotlin.random.Random
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -37,30 +33,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
+import dev.korryr.agrimarket.ui.features.farm.data.model.FarmProfile
 import dev.korryr.agrimarket.ui.features.market.viewModel.MarketViewModel
 import dev.korryr.agrimarket.ui.features.posts.dataModel.dataClass.FarmPost
-import dev.korryr.agrimarket.ui.theme.SecondaryTextLight
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.style.TextOverflow
-import dev.korryr.agrimarket.ui.features.farm.data.model.FarmProfile
-import dev.korryr.agrimarket.ui.features.market.presentation.rememberFarmProfile
-import dev.korryr.agrimarket.ui.features.market.presentation.rememberLikeCount
-import dev.korryr.agrimarket.ui.features.market.presentation.rememberUserFollows
-import dev.korryr.agrimarket.ui.features.market.presentation.rememberUserLiked
-import dev.korryr.agrimarket.ui.features.market.presentation.toggleFollow
-import dev.korryr.agrimarket.ui.features.market.presentation.toggleBookMark
 import java.util.Calendar
-import dev.korryr.agrimarket.ui.features.market.presentation.rememberFollowerCount
-import dev.korryr.agrimarket.ui.features.market.presentation.rememberBookmarked
-import dev.korryr.agrimarket.ui.features.market.presentation.rememberCommentCount
-import dev.korryr.agrimarket.ui.features.market.presentation.toggleLike
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -295,12 +280,30 @@ fun MarketScreen(
                                 items(displayedPosts) { post ->
                                     MarketPostCard(
                                         post = post,
-                                        onPostClick = { onPostClick(post) },
-                                        onProfileClick = onProfileClick,
-                                        onFollowClick = onFollowClick,
-                                        onLikeClick = onLikeClick,
-                                        onCommentClick = onCommentClick,
-                                        onBookmarkClick = onBookmarkClick,
+                                        farmProfile = farmProfiles[post.farmId],         // pass the actual FarmProfile
+                                        onPostClick = {
+                                            marketViewModel.selectPost(post.postId)
+                                            onPostClick(post)
+                                        },
+                                        onProfileClick = {
+                                            marketViewModel.selectFarm(post.farmId)
+                                            onProfileClick(post.farmId)
+                                        },
+                                        onFollowClick = { farmId ->
+                                            marketViewModel.onToggleFollow(farmId)
+                                            onFollowClick(farmId)
+                                        },
+                                        onLikeClick = { postId ->
+                                            marketViewModel.onToggleLike(postId)
+                                            onLikeClick(postId)
+                                        },
+                                        onCommentClick = { postId ->
+                                            onCommentClick(postId)
+                                        },
+                                        onBookmarkClick = { postId ->
+                                            marketViewModel.onToggleBookmark(postId)
+                                            onBookmarkClick(postId)
+                                        }
                                     )
                                 }
                             }
@@ -315,43 +318,50 @@ fun MarketScreen(
 @Composable
 private fun MarketPostCard(
     post: FarmPost,
+    farmProfile: FarmProfile?,
     onPostClick: () -> Unit,
     onProfileClick: (String) -> Unit,
     onFollowClick: (String) -> Unit,
     onLikeClick: (String) -> Unit,
     onCommentClick: (String) -> Unit,
     onBookmarkClick: (String) -> Unit,
+    marketViewModel: MarketViewModel = hiltViewModel()
 ) {
     // fetch farmer profile in real time
-    val profileState by rememberFarmProfile(post.farmId)
-    val profileName = profileState?.farmName ?: "sijui farmer"
-    val profileImageUrl = profileState?.imageUrl ?: ""
+    val profileName = farmProfile?.farmName ?: "Unknown"
+    val profileImageUrl = farmProfile?.imageUrl ?: ""
 
     // 2) Compute “days ago” from post.timestamp (if you stored a Firestore Timestamp)
     //    If your FarmPost has a `timestamp: com.google.firebase.Timestamp` field, do:
     //    val daysAgo by rememberDaysAgo(post.timestamp)
     //    For simplicity, here we’ll just show a placeholder if timestamp is missing.
-    val daysAgoText = profileState?.let {
-        post.timestamp?.let { ts ->
-            val now = Calendar.getInstance().timeInMillis
-            val then = ts.toDate().time
-            val diffdays = ((now - then) / (1000 * 60 * 60 * 24)).toInt()
-            "$diffdays d ago"
-        } ?: ""
-    } ?: ""
+//    val daysAgoText = profileState?.let {
+//        post.timestamp.let { tsInMillis: Long ->
+//            val now = Calendar.getInstance().timeInMillis
+//            val then = tsInMillis
+//            val diffdays = ((now - then) / (1000 * 60 * 60 * 24)).toInt()
+//            "$diffdays d ago"
+//        } ?: ""
+//    } ?: ""
 
-    // 3) Real-time like count and whether current user has liked
-    val likeCount by rememberLikeCount(post.postId)
-    val userLiked by rememberUserLiked(post.postId)
+    val likeCount by marketViewModel.selectedLikeCount.collectAsState()
+    val userLiked by marketViewModel.selectedUserLiked.collectAsState()
+    val commentCount by marketViewModel.selectedCommentCount.collectAsState()
+    val bookmarked by marketViewModel.selectedBookmarked.collectAsState()
+    val followingFarm by marketViewModel.selectedUserFollows.collectAsState()
 
-    // 4) Real-time comment count
-    val commentCount by rememberCommentCount(post.postId)
-
-    // 5) Real-time bookmark state
-    val bookmarked by rememberBookmarked(post.postId)
-
-    // 6) Real-time follow state (does current user follow this farm?)
-    val followingFarm by rememberUserFollows(post.farmId)
+//    // 3) Real-time like count and whether current user has liked
+//    val likeCount by rememberLikeCount(post.postId)
+//    val userLiked by rememberUserLiked(post.postId)
+//
+//    // 4) Real-time comment count
+//    val commentCount by rememberCommentCount(post.postId)
+//
+//    // 5) Real-time bookmark state
+//    val bookmarked by rememberBookmarked(post.postId)
+//
+//    // 6) Real-time follow state (does current user follow this farm?)
+//    val followingFarm by rememberUserFollows(post.farmId)
 
     Card(
         modifier = Modifier
@@ -440,7 +450,7 @@ private fun MarketPostCard(
                             )
                         )
                         Text(
-                            text = daysAgoText,
+                            text = "3 d ago",
                             style = MaterialTheme.typography.bodySmall.copy(
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                                 fontSize = 12.sp
@@ -452,7 +462,7 @@ private fun MarketPostCard(
                 // Follow Button / unfollow
                 OutlinedButton(
                     onClick = {
-                        toggleFollow(post.farmId)
+                        marketViewModel.onToggleFollow(post.farmId)
                         onFollowClick(post.farmId)
                     },
                     modifier = Modifier.height(36.dp),
@@ -582,7 +592,7 @@ private fun MarketPostCard(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                         modifier = Modifier.clickable {
-                            toggleLike(post.postId)
+                            marketViewModel.onToggleLike(post.postId)
                             onLikeClick(post.postId)
                         }
                     ) {
@@ -645,7 +655,7 @@ private fun MarketPostCard(
                     modifier = Modifier
                         .size(24.dp)
                         .clickable {
-                            toggleBookMark(post.postId)
+                            marketViewModel.onToggleBookmark(post.postId)
                             onBookmarkClick(post.postId)
                         }
                 )

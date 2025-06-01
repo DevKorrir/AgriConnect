@@ -1,6 +1,7 @@
 package dev.korryr.agrimarket.ui.features.market.dataModel.repo
 
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import dev.korryr.agrimarket.ui.features.farm.data.model.FarmProfile
 import dev.korryr.agrimarket.ui.features.posts.dataModel.dataClass.FarmPost
@@ -49,6 +50,23 @@ class MarketRepository @Inject constructor(
                         doc.toObject(FarmPost::class.java)?.copy(postId = doc.id)
                     } ?: emptyList()
                 trySend(posts)
+            }
+        awaitClose { subscription.remove() }
+    }
+
+    // 2) Stream all farm profiles
+    fun streamAllFarmProfiles(): Flow<List<FarmProfile>> = callbackFlow {
+        val subscription = firestore
+            .collection("farms")
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
+                }
+                val farms = snapshot?.documents
+                    ?.mapNotNull { it.toObject(FarmProfile::class.java)?.copy(farmId = it.id) }
+                    ?: emptyList()
+                trySend(farms)
             }
         awaitClose { subscription.remove() }
     }
@@ -170,10 +188,81 @@ class MarketRepository @Inject constructor(
         awaitClose { subscription.remove() }
     }
 
-    // Toggle functions remain the same as before:
-    fun toggleLike(postId: String) { /* … */ }
-    fun toggleBookMark(postId: String) { /* … */ }
-    fun toggleFollow(farmId: String) { /* … */ }
+    /** 8) Stream “follower count” for a given farm (if you store follower lists) */
+    fun streamFollowerCount(farmId: String): Flow<Int> = callbackFlow {
+        // Example: if you store each user’s “following” array, you can query “whereArrayContains”
+        val subscription = firestore
+            .collection("users")
+            .whereArrayContains("following", farmId)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
+                }
+                trySend(snapshot?.size() ?: 0)
+            }
+        awaitClose { subscription.remove() }
+    }
+
+    /** 9) Toggle “like” for a post (non‐Composable) */
+    fun toggleLike(postId: String) {
+        val firestore = FirebaseFirestore.getInstance()
+        val currentUser = FirebaseAuth.getInstance().currentUser?.uid ?: return
+
+        val likeDoc = firestore
+            .collection("farm_posts")
+            .document(postId)
+            .collection("likes")
+            .document(currentUser)
+
+        likeDoc.get().addOnSuccessListener { documentSnapshot ->
+            if (documentSnapshot.exists()) {
+                likeDoc.delete()
+            } else {
+                likeDoc.set(mapOf("timestamp" to FieldValue.serverTimestamp()))
+            }
+        }
+    }
+
+    /** 10) Toggle “bookmark” for a post */
+    fun toggleBookMark(postId: String) {
+        val firestore = FirebaseFirestore.getInstance()
+        val currentUser = FirebaseAuth.getInstance().currentUser?.uid ?: return
+
+        val bookmarkDoc = firestore
+            .collection("users")
+            .document(currentUser)
+            .collection("bookmarks")
+            .document(postId)
+
+        bookmarkDoc.get().addOnSuccessListener { documentSnapshot ->
+            if (documentSnapshot.exists()) {
+                bookmarkDoc.delete()
+            } else {
+                bookmarkDoc.set(mapOf("timestamp" to FieldValue.serverTimestamp()))
+            }
+        }
+    }
+
+    /** 11) Toggle “follow” for a farm */
+    fun toggleFollow(farmId: String) {
+        val firestore = FirebaseFirestore.getInstance()
+        val currentUser = FirebaseAuth.getInstance().currentUser?.uid ?: return
+
+        val followDoc = firestore
+            .collection("users")
+            .document(currentUser)
+            .collection("following")
+            .document(farmId)
+
+        followDoc.get().addOnSuccessListener { snap ->
+            if (snap.exists()) {
+                followDoc.delete()
+            } else {
+                followDoc.set(mapOf("timestamp" to FieldValue.serverTimestamp()))
+            }
+        }
+    }
 
 
 

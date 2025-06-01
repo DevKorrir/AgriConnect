@@ -6,6 +6,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.korryr.agrimarket.ui.features.farm.data.model.FarmProfile
 import dev.korryr.agrimarket.ui.features.market.dataModel.repo.MarketRepository
 import dev.korryr.agrimarket.ui.features.posts.dataModel.dataClass.FarmPost
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -47,6 +48,14 @@ class MarketViewModel @Inject constructor(
                 .collect { posts ->
                     _allPosts.value = posts
                     _isLoading.value = false
+
+                    // Build distinct, sorted categories:
+                    val types = posts
+                        .map { it.type.trim() }
+                        .filter { it.isNotBlank() }
+                        .toSet()
+                        .sorted()
+                    _allTypes.value = types
                 }
         }
 
@@ -54,7 +63,7 @@ class MarketViewModel @Inject constructor(
         viewModelScope.launch {
             // If you want to fetch all farm profiles in one go, there is no built-in "streamAll" example above,
             // but you could write a repository function streamAllFarmProfiles() that listens to `collection("farms")`.
-            repository.streamFarmProfile(farmId = ) // this returns Flow<List<FarmProfile>>
+            repository.streamAllFarmProfiles() // this returns Flow<List<FarmProfile>>
                 .collect { profileList ->
                     // Convert to a Map<farmId, FarmProfile> for easier lookups
                     _allFarmProfiles.value = profileList.associateBy { it.farmId }
@@ -117,11 +126,13 @@ class MarketViewModel @Inject constructor(
     private val _selectedFarmId = MutableStateFlow<String?>(null)
     val selectedFarmId: StateFlow<String?> = _selectedFarmId
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     val selectedFollowerCount: StateFlow<Int> = _selectedFarmId
         .filterNotNull()
         .flatMapLatest { farmId -> repository.streamFollowerCount(farmId) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     val selectedUserFollows: StateFlow<Boolean> = _selectedFarmId
         .filterNotNull()
         .flatMapLatest { farmId -> repository.streamUserFollows(farmId) }
