@@ -250,7 +250,7 @@ fun MarketPostCard(
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
                             .fillMaxSize()
-                    )
+                            .clip(RoundedCornerShape(12.dp))                    )
                 } else {
                     // Placeholder when there’s no image URL
                     Box(
