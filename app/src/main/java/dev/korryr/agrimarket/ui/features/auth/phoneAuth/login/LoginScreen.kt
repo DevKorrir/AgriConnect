@@ -90,8 +90,8 @@ fun AgribuzLoginScreen(
     val authState by viewModel.authState.collectAsState()
 
     // Gesture & toggle for admin login
-    var tapCount by remember { mutableStateOf(0)}
-    var isAdminLogin by remember { mutableStateOf(false)}
+    var tapCount by remember { mutableStateOf(0) }
+    var isAdminLogin by remember { mutableStateOf(false) }
 
     // React to successful login
     LaunchedEffect(authState) {
@@ -110,9 +110,11 @@ fun AgribuzLoginScreen(
                     else -> Toast.makeText(context, "Unknown role", Toast.LENGTH_SHORT).show()
                 }
             }
+
             is AuthUiState.Error -> {
                 Toast.makeText(context, state.message, Toast.LENGTH_SHORT).show()
             }
+
             else -> {}
         }
     }
@@ -173,13 +175,20 @@ fun AgribuzLoginScreen(
                     modifier = Modifier
                         .size(90.dp)
                         .clip(CircleShape)
-                        .clickable{
-                            if(!isAdminLogin){
+                        .clickable {
+                            if (!isAdminLogin) {
                                 tapCount++
                                 if (tapCount >= 7) isAdminLogin = true
                             }
                         }
-                        .background(Color.White)
+                        .background(
+                            Brush.horizontalGradient(
+                                colors = listOf(
+                                    MaterialTheme.colorScheme.primary,
+                                    MaterialTheme.colorScheme.tertiary
+                                )
+                            )
+                        )
                         .padding(12.dp),
                     contentAlignment = Alignment.Center
                 ) {
@@ -204,7 +213,7 @@ fun AgribuzLoginScreen(
                 )
 
                 Text(
-                    text = if (isAdminLogin) "Perform Admin tasks" else "Log in to your Agri Makegting account",
+                    text = if (isAdminLogin) "Perform Admin tasks" else "Log in to your Agri Marketing account",
                     style = MaterialTheme.typography.bodyLarge.copy(
                         color = Color.White,
                         fontWeight = FontWeight.Medium
@@ -270,9 +279,9 @@ fun AgribuzLoginScreen(
                             keyboardType = KeyboardType.Password,
                             imeAction = ImeAction.Done
                         ),
-                       // onDone = {
-                           // if (isFormValid) onLoginSuccess(email, password, isAdminLogin)
-                        //},
+                         onDone = {
+                         if (isFormValid) onLoginSuccess(email, password, isAdminLogin)
+                        },
                         modifier = Modifier.fillMaxWidth()
                     )
 
@@ -306,7 +315,9 @@ fun AgribuzLoginScreen(
                             if (email.isBlank()) {
                                 emailError = "Email is required"
                                 valid = false
-                            } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                            } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email)
+                                    .matches()
+                            ) {
                                 emailError = "Invalid email"
                                 valid = false
                             } else emailError = ""
@@ -336,12 +347,12 @@ fun AgribuzLoginScreen(
                             color = Color.White,
                             modifier = Modifier.size(24.dp)
                         ) else
-                        Text(
-                            text = if (isAdminLogin) "Admin Log In" else "Log In",
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontWeight = FontWeight.Bold
+                            Text(
+                                text = if (isAdminLogin) "Admin Log In" else "Log In",
+                                style = MaterialTheme.typography.titleMedium.copy(
+                                    fontWeight = FontWeight.Bold
+                                )
                             )
-                        )
                     }
 
                     // Display authentication errors
@@ -448,13 +459,13 @@ fun AgribuzLoginScreen(
                 contentDescription = "Crops",
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(60.dp)
-                    .padding(horizontal = 32.dp),
+                    .height(60.dp),
+                // .padding(horizontal = 32.dp),
                 contentScale = ContentScale.FillWidth,
                 alpha = 0.8f
             )
 
-            Spacer(modifier = Modifier.height(60.dp))
+            //Spacer(modifier = Modifier.height(60.dp))
         }
     }
 }

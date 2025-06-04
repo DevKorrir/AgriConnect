@@ -196,7 +196,7 @@ fun MarketPostCard(
                 OutlinedButton(
                     onClick = {
                         marketViewModel.onToggleFollow(post.farmId)
-                        onFollowClick(post.farmId)
+                        ///onFollowClick(post.farmId)
                     },
                     modifier = Modifier.height(36.dp),
                     shape = RoundedCornerShape(18.dp),
@@ -326,7 +326,7 @@ fun MarketPostCard(
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                         modifier = Modifier.clickable {
                             marketViewModel.onToggleLike(post.postId)
-                            onLikeClick(post.postId)
+                            //onLikeClick(post.postId)
                         }
                     ) {
                         Icon(
@@ -451,24 +451,3 @@ fun MarketPostCard(
         }
     }
 }
-//
-//// Helper functions for mock data
-//private fun generateMockUserName(): String {
-//    val names = listOf(
-//        "John Farmer", "Mary Gardens", "Peter Crops", "Sarah Fields",
-//        "Mike Harvest", "Lucy Green", "David Plants", "Emma Organic",
-//        "James Fresh", "Anna Natural", "Tom Healthy", "Lisa Pure"
-//    )
-//    return names.random()
-//}
-//
-//private fun generateMockProfileImage(): String {
-//    val avatars = listOf(
-//        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
-//        "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face",
-//        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face",
-//        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
-//        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face"
-//    )
-//    return avatars.random()
-//}

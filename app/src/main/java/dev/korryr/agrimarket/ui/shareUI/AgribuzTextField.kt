@@ -311,7 +311,7 @@ fun AgribuzTextField(
  * with a visual bar and appropriate agricultural-themed colors
  */
 @Composable
-fun PasswordStrengthIndicator(strength: Int) {
+private fun PasswordStrengthIndicator(strength: Int) {
     val strengthText = when(strength) {
         0 -> "Very Weak"
         1 -> "Weak"

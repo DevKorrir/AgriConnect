@@ -6,6 +6,7 @@ import androidx.compose.material.icons.automirrored.outlined.Message
 import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Shop
+import androidx.compose.material.icons.outlined.Storefront
 import androidx.compose.ui.graphics.vector.ImageVector
 
 sealed class BottomScreens(
@@ -19,7 +20,7 @@ sealed class BottomScreens(
         title = "Home"
     )
 
-    object MarketPlace : BottomScreens("market", Icons.Outlined.Shop, "Market")
+    object MarketPlace : BottomScreens("market", Icons.Outlined.Storefront, "Market")
     object Orders : BottomScreens("orders", Icons.AutoMirrored.Outlined.List, "Orders")
     object Message: BottomScreens("message", Icons.AutoMirrored.Outlined.Message, "Messages")
     object Profile : BottomScreens("profile", Icons.Outlined.AccountCircle, "Profile")
