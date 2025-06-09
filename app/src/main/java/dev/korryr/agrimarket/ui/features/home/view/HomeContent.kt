@@ -48,10 +48,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.google.firebase.auth.FirebaseAuth
@@ -94,6 +96,14 @@ fun HomeContent(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.background,
+                            MaterialTheme.colorScheme.surface.copy(alpha = 0.3f)
+                        )
+                    )
+                )
                 .verticalScroll(rememberScrollState())
                 .padding(contentPadding)
                 .padding(horizontal = 16.dp)
@@ -119,6 +129,7 @@ fun HomeContent(
                         onValueChange = { query = it },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(
+                            capitalization = KeyboardCapitalization.Sentences,
                             imeAction = ImeAction.Search,
                             keyboardType = KeyboardType.Text
                         ),

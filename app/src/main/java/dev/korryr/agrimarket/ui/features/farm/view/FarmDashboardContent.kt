@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Agriculture
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -24,6 +25,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -85,7 +87,7 @@ fun FarmDashboardContent(
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(8.dp))
+      //  Spacer(modifier = Modifier.height(8.dp))
 
         // Farm Profile Image
         Box(
@@ -95,21 +97,49 @@ fun FarmDashboardContent(
                 .clip(CircleShape)
                 .fillMaxWidth()
                 .clickable { onEdit() }
-                .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f))
+                .background(
+                    brush = Brush.linearGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.primary,
+                            MaterialTheme.colorScheme.tertiary
+                        )
+                    ),
+                    shape = CircleShape
+                )
+                .padding(4.dp)
         ) {
-            Image(
-                painter = rememberAsyncImagePainter(
-                    profile.imageUrl.ifEmpty { "https://via.placeholder.com/150" }
-                        ?: "https://via.placeholder.com/150"
-                ),
-                contentDescription = "Farm Profile Image",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(100.dp)
-                    .clip(CircleShape)
-                    .clickable { /* TODO: open image picker */ }
-            )
+            val profileImageUrl = profile?.imageUrl ?: ""
+
+            if (profileImageUrl.isNotBlank()) {
+
+                Image(
+                    painter = rememberAsyncImagePainter(profileImageUrl),
+                    contentDescription = "Farm Profile Image",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(CircleShape)
+                        .clickable { /* TODO: open image picker */ }
+                )
+            } else {
+                // If no profile image URL, show a placeholder circle
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.PersonAdd,
+                        contentDescription = "No Profile",
+                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
         }
+
 
         // Farm Information Card
         Card(
@@ -403,7 +433,11 @@ fun StatisticItem(label: String, value: String) {
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = label,
-            style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+            style = MaterialTheme.typography.bodyMedium.copy(
+                color = MaterialTheme.colorScheme.onSurface.copy(
+                    alpha = 0.6f
+                )
+            )
         )
     }
 }

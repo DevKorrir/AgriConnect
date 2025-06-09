@@ -162,7 +162,7 @@ fun AgribuzSignupScreen(
                         contentDescription = "App Logo",
                         modifier = Modifier
                             .clip(CircleShape)
-                            .size(40.dp)
+                            //.size(40.dp)
                     )
                 }
             }

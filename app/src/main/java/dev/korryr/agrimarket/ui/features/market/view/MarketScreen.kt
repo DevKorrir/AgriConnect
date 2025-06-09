@@ -147,8 +147,9 @@ fun MarketScreen(
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(28.dp)
                     )
+
                     Text(
-                        "AgriMarket",
+                        "SocialMarket",
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.Bold,
                             fontSize = 24.sp,
@@ -316,26 +317,26 @@ fun MarketScreen(
                                 farmProfile = farmProfiles[post.farmId],
                                 onPostClick = {
                                     marketViewModel.selectPost(post.postId)
-                                    onPostClick(post)
+                                   // onPostClick(post)
                                 },
                                 onProfileClick = {
                                     marketViewModel.selectFarm(post.farmId)
-                                    onProfileClick(post.farmId)
+                                    //onProfileClick(post.farmId)
                                 },
                                 onFollowClick = { farmId ->
                                     marketViewModel.onToggleFollow(farmId)
-                                    onFollowClick(farmId)
+                                    //onFollowClick(farmId)
                                 },
                                 onLikeClick = { postId ->
                                     marketViewModel.onToggleLike(postId)
-                                    onLikeClick(postId)
+                                    //onLikeClick(postId)
                                 },
                                 onCommentClick = { postId ->
-                                    onCommentClick(postId)
+                                    //onCommentClick(postId)
                                 },
                                 onBookmarkClick = { postId ->
                                     marketViewModel.onToggleBookmark(postId)
-                                    onBookmarkClick(postId)
+                                    //onBookmarkClick(postId)
                                 }
                             )
                         }
