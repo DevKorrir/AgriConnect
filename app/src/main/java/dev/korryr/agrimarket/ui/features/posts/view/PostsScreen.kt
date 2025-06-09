@@ -25,6 +25,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddAPhoto
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Publish
@@ -46,6 +47,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import dev.korryr.agrimarket.R
 import dev.korryr.agrimarket.ui.features.posts.viewModel.FarmPostViewModel
@@ -60,7 +62,8 @@ import kotlinx.coroutines.delay
 @Composable
 fun CreatePostScreen(
     postViewModel: FarmPostViewModel = hiltViewModel(),
-    onPostSuccess: () -> Unit
+    onPostSuccess: () -> Unit,
+    navConctroller: NavController
 ) {
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     var description by remember { mutableStateOf("") }
@@ -151,9 +154,27 @@ fun CreatePostScreen(
             //hearder
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center,
+                horizontalArrangement = Arrangement.Start,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                Icon(
+                    Icons.Default.ArrowBackIosNew,
+                    contentDescription = null,
+                    tint = colorScheme.primary,
+                    modifier = Modifier
+                        .size(28.dp)
+                        .background(
+                            colorScheme.primary.copy(alpha = 0.1f),
+                            CircleShape
+                        )
+                        .padding(6.dp)
+                        .clickable {
+                            navConctroller.navigateUp()
+                        }
+                )
+
+                Spacer(modifier = Modifier.width(24.dp))
+
                 Icon(
                     Icons.Default.Add,
                     contentDescription = null,

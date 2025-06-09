@@ -24,6 +24,7 @@ sealed class AuthUiState {
     data class Success(val user: FirebaseUser) : AuthUiState()
     data class SuccessWithRole(val user: FirebaseUser, val role: String) : AuthUiState()
     data class Error(val message: String) : AuthUiState()
+    object PasswordResetSent : AuthUiState()
 }
 
 @HiltViewModel
@@ -140,6 +141,47 @@ class AuthViewModel @Inject constructor(
 
         //reset locs=al ui state
         _authState.value = AuthUiState.Idle
+    }
+
+
+    fun resetPassword(email: String) {
+        viewModelScope.launch {
+            try {
+                _authState.value = AuthUiState.Loading
+
+                // Validate email format
+                if (!isValidEmail(email)) {
+                    _authState.value = AuthUiState.Error("Please enter a valid email address")
+                    return@launch
+                }
+
+                // Send password reset email using Firebase Auth
+                FirebaseAuth.getInstance().sendPasswordResetEmail(email.trim()).await()
+
+                // On success, update state
+                _authState.value = AuthUiState.PasswordResetSent
+
+            } catch (e: Exception) {
+                // Handle different types of errors
+                val errorMessage = when {
+                    e.message?.contains("user-not-found") == true ->
+                        "No account found with this email address"
+                    e.message?.contains("invalid-email") == true ->
+                        "Please enter a valid email address"
+                    e.message?.contains("too-many-requests") == true ->
+                        "Too many requests. Please try again later"
+                    e.message?.contains("network") == true ->
+                        "Network error. Please check your connection"
+                    else -> e.message ?: "Failed to send reset email. Please try again"
+                }
+                _authState.value = AuthUiState.Error(errorMessage)
+            }
+        }
+    }
+
+    // Helper function for email validation
+    private fun isValidEmail(email: String): Boolean {
+        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
     }
 
 

@@ -27,6 +27,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.hilt.navigation.compose.hiltViewModel
 import dev.korryr.agrimarket.ui.features.farm.viewModel.FarmProfileUiState
 import dev.korryr.agrimarket.ui.features.farm.viewModel.FarmProfileViewModel
+import androidx.compose.foundation.layout.Row
+import androidx.compose.ui.unit.dp
 
 enum class FarmScreenMode {
     LOADING,
@@ -43,7 +45,7 @@ fun FarmProfileScreen(
 ) {
     val uiState by farmViewModel.uiState.collectAsState()
     val isSaved by farmViewModel.isSaved.collectAsState()
-    val scaffold  = PaddingValues()
+    val scaffold = PaddingValues()
 
     var isEditMode by remember { mutableStateOf(false) }
 
@@ -110,10 +112,21 @@ fun FarmProfileScreen(
                     onClick = onNavigateToPostScreen,
                     containerColor = MaterialTheme.colorScheme.primary
                 ) {
-                    Icon(
-                        Icons.Default.Add,
-                        contentDescription = "Add Post"
-                    )
+                    Row(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Add,
+                            contentDescription = "Add Post"
+                        )
+                        Text(
+                            text = "Add Post",
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
                 }
             }
         }
@@ -126,11 +139,11 @@ fun FarmProfileScreen(
                     FarmDashboardContent(
                         profile = (uiState as FarmProfileUiState.Success).profile!!,
                         modifier = Modifier.padding(paddingValues),
-                        onEdit = { isEditMode =true }
+                        onEdit = { isEditMode = true }
                     )
                 } else {
                     CreateEditFarmContent(
-                        modifier = Modifier.padding(paddingValues ),
+                        modifier = Modifier.padding(paddingValues),
                         uiState = uiState,
                         farmViewModel = farmViewModel,
                         isEditMode = isEditMode,

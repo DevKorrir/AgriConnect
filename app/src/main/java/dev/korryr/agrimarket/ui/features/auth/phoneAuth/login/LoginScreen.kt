@@ -54,6 +54,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import dev.korryr.agrimarket.R
 import dev.korryr.agrimarket.ui.features.auth.phoneAuth.viewModel.AuthUiState
@@ -68,7 +69,7 @@ fun AgribuzLoginScreen(
     onGoogleSignIn: () -> Unit,
     onNavigateToSignup: () -> Unit,
     viewModel: AuthViewModel = hiltViewModel(),
-    navController: NavHostController
+    navController: NavController
 ) {
     val context = LocalContext.current
     // State variables

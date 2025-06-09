@@ -1,4 +1,4 @@
-package dev.korryr.agrimarket.apllication.mainApp
+package dev.korryr.agrimarket.application.mainApp
 
 import android.app.Application
 import dagger.hilt.android.HiltAndroidApp
