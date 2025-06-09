@@ -1,6 +1,11 @@
 package dev.korryr.agrimarket.ui.features.farm.view
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -11,7 +16,6 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -22,13 +26,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import dev.korryr.agrimarket.ui.features.farm.viewModel.FarmProfileUiState
 import dev.korryr.agrimarket.ui.features.farm.viewModel.FarmProfileViewModel
-import androidx.compose.foundation.layout.Row
-import androidx.compose.ui.unit.dp
 
 enum class FarmScreenMode {
     LOADING,
@@ -67,9 +71,12 @@ fun FarmProfileScreen(
         }
     }
 
-
-    Scaffold(
-        topBar = {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
+        Column {
             TopAppBar(
                 title = {
                     Text(
@@ -105,67 +112,96 @@ fun FarmProfileScreen(
                     containerColor = MaterialTheme.colorScheme.surface
                 )
             )
-        },
-        floatingActionButton = {
-            if (hasExistingFarm && !isEditMode) {
-                FloatingActionButton(
-                    onClick = onNavigateToPostScreen,
-                    containerColor = MaterialTheme.colorScheme.primary
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-                        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(
-                            Icons.Default.Add,
-                            contentDescription = "Add Post"
+//        floatingActionButton = {
+//            if (hasExistingFarm && !isEditMode) {
+//                FloatingActionButton(
+//                    onClick = onNavigateToPostScreen,
+//                    containerColor = MaterialTheme.colorScheme.primary
+//                ) {
+//                    Row(
+//                        modifier = Modifier.padding(horizontal = 16.dp),
+//                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+//                        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)
+//                    ) {
+//                        Icon(
+//                            Icons.Default.Add,
+//                            contentDescription = "Add Post"
+//                        )
+//                        Text(
+//                            text = "Add Post",
+//                            fontWeight = FontWeight.Bold,
+//                            color = MaterialTheme.colorScheme.onPrimary
+//                        )
+//                    }
+//                }
+//            }
+//        }
+
+            when (uiState) {
+                is FarmProfileUiState.Loading -> LoadingScreen(Modifier.fillMaxSize())
+                is FarmProfileUiState.Success -> {
+                    if (hasExistingFarm && !isEditMode) {
+                        FarmDashboardContent(
+                            profile = (uiState as FarmProfileUiState.Success).profile!!,
+                            modifier = Modifier.fillMaxSize(),
+                            onEdit = { isEditMode = true }
                         )
-                        Text(
-                            text = "Add Post",
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimary
+                    } else {
+                        CreateEditFarmContent(
+                            modifier = Modifier.fillMaxSize(),
+                            uiState = uiState,
+                            farmViewModel = farmViewModel,
+                            isEditMode = isEditMode,
+                            existingProfile = if (hasExistingFarm) (uiState as FarmProfileUiState.Success).profile else null,
+                            onCancelEdit = { isEditMode = false }
                         )
                     }
                 }
-            }
-        }
-    ) { paddingValues ->
 
-        when (uiState) {
-            is FarmProfileUiState.Loading -> LoadingScreen(Modifier.padding(paddingValues))
-            is FarmProfileUiState.Success -> {
-                if (hasExistingFarm && !isEditMode) {
-                    FarmDashboardContent(
-                        profile = (uiState as FarmProfileUiState.Success).profile!!,
-                        modifier = Modifier.padding(paddingValues),
-                        onEdit = { isEditMode = true }
-                    )
-                } else {
+                is FarmProfileUiState.Error -> {
+                    // show error + fallback to create form
                     CreateEditFarmContent(
-                        modifier = Modifier.padding(paddingValues),
+                        modifier = Modifier.fillMaxSize(),
                         uiState = uiState,
                         farmViewModel = farmViewModel,
                         isEditMode = isEditMode,
-                        existingProfile = if (hasExistingFarm) (uiState as FarmProfileUiState.Success).profile else null,
+                        existingProfile = null,
                         onCancelEdit = { isEditMode = false }
                     )
                 }
-            }
 
-            is FarmProfileUiState.Error -> {
-                // show error + fallback to create form
-                CreateEditFarmContent(
-                    modifier = Modifier.padding(paddingValues),
-                    uiState = uiState,
-                    farmViewModel = farmViewModel,
-                    isEditMode = isEditMode,
-                    existingProfile = null,
-                    onCancelEdit = { isEditMode = false }
-                )
+                else -> {}
             }
+        }
 
-            else -> {}
+        // Floating Action Button positioned at bottom end
+        if (hasExistingFarm && !isEditMode) {
+            FloatingActionButton(
+                onClick = onNavigateToPostScreen,
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp),
+                containerColor = MaterialTheme.colorScheme.primary
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                    horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(
+                        8.dp
+                    )
+                ) {
+                    Icon(
+                        Icons.Default.Add,
+                        contentDescription = "Add Post"
+                    )
+                    Text(
+                        text = "Add Post",
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                }
+            }
         }
     }
+
 }

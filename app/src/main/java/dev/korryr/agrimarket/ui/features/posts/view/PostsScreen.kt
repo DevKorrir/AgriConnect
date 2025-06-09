@@ -162,15 +162,19 @@ fun CreatePostScreen(
                     contentDescription = null,
                     tint = colorScheme.primary,
                     modifier = Modifier
+                        .clip(
+                            CircleShape
+                        )
+                        .clickable {
+                            navConctroller.navigateUp()
+                        }
                         .size(28.dp)
                         .background(
                             colorScheme.primary.copy(alpha = 0.1f),
                             CircleShape
                         )
                         .padding(6.dp)
-                        .clickable {
-                            navConctroller.navigateUp()
-                        }
+
                 )
 
                 Spacer(modifier = Modifier.width(24.dp))

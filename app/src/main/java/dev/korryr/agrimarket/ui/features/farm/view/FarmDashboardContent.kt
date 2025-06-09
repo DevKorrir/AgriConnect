@@ -87,7 +87,7 @@ fun FarmDashboardContent(
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(8.dp))
+      //  Spacer(modifier = Modifier.height(8.dp))
 
         // Farm Profile Image
         Box(
