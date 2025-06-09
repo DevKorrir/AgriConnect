@@ -14,5 +14,7 @@ sealed class Screen(
     object Community : Screen("community")
     object Profile : Screen("profile")
     object Post : Screen("post")
+    object Settings : Screen("settings")
+    object Appearance : Screen("appearance")
 
 }

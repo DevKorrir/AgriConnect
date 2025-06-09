@@ -43,13 +43,17 @@ import dev.korryr.agrimarket.ui.features.home.HomePage
 import dev.korryr.agrimarket.ui.features.market.view.MarketScreen
 import dev.korryr.agrimarket.ui.features.messages.view.MessageScreen
 import dev.korryr.agrimarket.ui.features.orders.view.OrderScreen
+import dev.korryr.agrimarket.ui.features.settings.view.SettingsScreen
+import dev.korryr.agrimarket.ui.features.settings.view.apperances.view.AppearanceScreen
 import dev.korryr.agrimarket.ui.features.welcome.AgribuzWelcomeScreen
+import dev.korryr.agrimarket.ui.theme.ThemeViewModel
 
 @Composable
 fun NavGraph(
     modifier: Modifier = Modifier,
     navController: NavHostController,
-    scaffoldPadding: PaddingValues = PaddingValues()
+    scaffoldPadding: PaddingValues = PaddingValues(),
+    themeManager: ThemeViewModel
 ) {
     val context = LocalContext.current
 
@@ -301,6 +305,22 @@ fun NavGraph(
                         navController.navigateUp()
                     },
                     navConctroller = navController
+                )
+            }
+
+            composable(Screen.Settings.route) {
+                SettingsScreen(
+                    navController = navController,
+                    onAppearanceClick = {
+                        // Navigate to appearance/theme screen
+                        navController.navigate(Screen.Appearance.route)
+                    }
+                )
+            }
+
+            composable(Screen.Appearance.route) {
+                AppearanceScreen(
+                    themeManager = themeManager
                 )
             }
 
