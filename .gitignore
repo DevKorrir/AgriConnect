@@ -13,3 +13,5 @@
 .externalNativeBuild
 .cxx
 local.properties
+# My additions
+app/release/app-release.apk
