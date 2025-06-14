@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -53,6 +54,7 @@ import dev.korryr.agrimarket.ui.features.farm.data.model.FarmProfile
 import dev.korryr.agrimarket.ui.features.market.viewModel.MarketViewModel
 import dev.korryr.agrimarket.ui.features.posts.dataModel.dataClass.FarmPost
 import java.util.Calendar
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun MarketPostCard(
@@ -95,6 +97,12 @@ fun MarketPostCard(
     val commentCount by marketViewModel.selectedCommentCount.collectAsState()
     val bookmarked by marketViewModel.selectedBookmarked.collectAsState()
     val followingFarm by marketViewModel.selectedUserFollows.collectAsState()
+
+    //get current user id
+    val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+
+    // check if is my post
+    val isMyPost = currentUserId == post.farmId
 
     Card(
         modifier = Modifier
@@ -192,45 +200,61 @@ fun MarketPostCard(
                     }
                 }
 
-                // Follow Button / unfollow
-                OutlinedButton(
-                    onClick = {
-                        marketViewModel.onToggleFollow(post.farmId)
-                        ///onFollowClick(post.farmId)
-                    },
-                    modifier = Modifier.height(36.dp),
-                    shape = RoundedCornerShape(18.dp),
-                    border = if (followingFarm) null else BorderStroke(
-                        1.dp,
-                        MaterialTheme.colorScheme.primary
-                    ),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        containerColor = if (followingFarm)
-                            MaterialTheme.colorScheme.primary
-                        else
-                            Color.Transparent,
-                        contentColor = if (followingFarm)
-                            MaterialTheme.colorScheme.onPrimary
-                        else
-                            MaterialTheme.colorScheme.primary
-                    )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.End
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Icon(
-                            imageVector = if (followingFarm) Icons.Default.Check else Icons.Default.PersonAdd,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp)
-                        )
+                    if (isMyPost) {
+                        // Option A: show nothing
+                        Spacer(modifier = Modifier.width(16.dp))
+
+                        // Option B: show a disabled “Owner” badge instead
                         Text(
-                            if (followingFarm) "Following" else "Follow",
-                            style = MaterialTheme.typography.bodySmall.copy(
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 12.sp
-                            )
+                            text = "Owner",
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium),
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                         )
+                    } else {
+                        // Follow Button / unfollow
+                        OutlinedButton(
+                            onClick = {
+                                marketViewModel.onToggleFollow(post.farmId)
+                            },
+                            modifier = Modifier.height(36.dp),
+                            shape = RoundedCornerShape(18.dp),
+                            border = if (followingFarm) null else BorderStroke(
+                                1.dp,
+                                MaterialTheme.colorScheme.primary
+                            ),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                containerColor = if (followingFarm)
+                                    MaterialTheme.colorScheme.primary
+                                else
+                                    Color.Transparent,
+                                contentColor = if (followingFarm)
+                                    MaterialTheme.colorScheme.onPrimary
+                                else
+                                    MaterialTheme.colorScheme.primary
+                            )
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Icon(
+                                    imageVector = if (followingFarm) Icons.Default.Check else Icons.Default.PersonAdd,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Text(
+                                    if (followingFarm) "Following" else "Follow",
+                                    style = MaterialTheme.typography.bodySmall.copy(
+                                        fontWeight = FontWeight.SemiBold,
+                                        fontSize = 12.sp
+                                    )
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -250,7 +274,8 @@ fun MarketPostCard(
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
                             .fillMaxSize()
-                            .clip(RoundedCornerShape(12.dp))                    )
+                            .clip(RoundedCornerShape(12.dp))
+                    )
                 } else {
                     // Placeholder when there’s no image URL
                     Box(
