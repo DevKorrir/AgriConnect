@@ -13,7 +13,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MarketViewModel @Inject constructor(
-    private val repository: MarketRepository
+    private val repository: MarketRepository,
+    private val auth: com.google.firebase.auth.FirebaseAuth
 ) : ViewModel() {
 
     // 1) All farm posts as before
@@ -32,9 +33,19 @@ class MarketViewModel @Inject constructor(
     private val _allFarmProfiles = MutableStateFlow<Map<String, FarmProfile>>(emptyMap())
     val allFarmProfiles: StateFlow<Map<String, FarmProfile>> = _allFarmProfiles
 
-//    init {
+    //    init {
 //        fetchAllPostsFromFirebase()
 //    }
+    private val userId = auth.currentUser?.uid ?: ""
+
+    private val _postsCount = MutableStateFlow(0)
+    val postsCount: StateFlow<Int> = _postsCount.asStateFlow()
+
+    private val _followersCount = MutableStateFlow(0)
+    val followersCount: StateFlow<Int> = _followersCount.asStateFlow()
+
+    private val _followingCount = MutableStateFlow(0)
+    val followingCount: StateFlow<Int> = _followingCount.asStateFlow()
 
     init {
         // 1. Collect all posts
@@ -69,6 +80,16 @@ class MarketViewModel @Inject constructor(
                     _allFarmProfiles.value = profileList.associateBy { it.farmId }
                 }
         }
+
+        viewModelScope.launch {
+            // Load initial posts count however you do it:
+            _postsCount.value = repository.getAllFarmPosts().size
+
+            // Load follow counts
+            _followersCount.value = repository.getFollowersCount(userId)
+            _followingCount.value = repository.getFollowingCount(userId)
+        }
+
     }
 
     private fun fetchAllPostsFromFirebase() {
@@ -82,8 +103,8 @@ class MarketViewModel @Inject constructor(
             // e.g. if posts = [ type="Livestock", type="Crops", type="Livestock" ]
             // distinct = ["Crops", "Livestock"]
             val typesSet = posts.map { it.type.trim() }
-                                .filter { it.isNotBlank() }
-                                .toSet()
+                .filter { it.isNotBlank() }
+                .toSet()
 
             // Sort them alphabetically (or implement your own priority)
             val sortedList = typesSet.sorted()
@@ -170,6 +191,7 @@ class MarketViewModel @Inject constructor(
     fun selectPost(postId: String) {
         _selectedPostId.value = postId
     }
+
     fun selectFarm(farmId: String) {
         _selectedFarmId.value = farmId
     }

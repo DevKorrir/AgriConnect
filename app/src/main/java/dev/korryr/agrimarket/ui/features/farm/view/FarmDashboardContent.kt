@@ -34,6 +34,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.google.firebase.auth.FirebaseAuth
 import dev.korryr.agrimarket.ui.features.farm.data.model.FarmProfile
 import dev.korryr.agrimarket.ui.features.farm.presentation.StatisticItem
+import dev.korryr.agrimarket.ui.features.market.viewModel.MarketViewModel
 import dev.korryr.agrimarket.ui.features.posts.dataModel.dataClass.FarmPost
 import dev.korryr.agrimarket.ui.features.posts.viewModel.FarmPostViewModel
 import dev.korryr.agrimarket.ui.theme.SecondaryTextLight
@@ -53,6 +54,7 @@ fun FarmDashboardContent(
     profile: FarmProfile,
     onEdit: () -> Unit,
     farmPostViewModel: FarmPostViewModel = hiltViewModel(),
+    marketViewModel: MarketViewModel = hiltViewModel(),
     onViewAllPosts: () -> Unit = {},
     onPostClick: (FarmPost) -> Unit = {}
 ) {
@@ -71,6 +73,9 @@ fun FarmDashboardContent(
 
     // 3) Collect recentPosts state
     val recentPosts by farmPostViewModel.recentPosts.collectAsState()
+    //val postsCount by marketViewModel.postsCount.collectAsState()
+    val followCount by marketViewModel.followersCount.collectAsState()
+    val followingCount by marketViewModel.followingCount.collectAsState()
 
     // 4) Collect loading / error states (optional)
     val isLoading by farmPostViewModel.isPosting.collectAsState()   // true while uploading / fetching
@@ -235,15 +240,14 @@ fun FarmDashboardContent(
                     StatisticItem(
                         label = "Posts",
                         value = postsCount.toString()
-                        //value = "0" // TODO: Get from actual data
                     )
                     StatisticItem(
                         label = "Followers",
-                        value = "0" // TODO: Get from actual data
+                        value = followCount.toString()
                     )
                     StatisticItem(
                         label = "Following",
-                        value = "0" // TODO: Get from actual data
+                        value = followingCount.toString()
                     )
                 }
             }

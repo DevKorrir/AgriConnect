@@ -295,5 +295,32 @@ class MarketRepository @Inject constructor(
         return snap.exists()
     }
 
+    /**
+     * Get the number of followers for a farm.
+     */
+    suspend fun getFollowersCount(farmId: String): Int {
+        val snap = firestore
+            .collection("farms")
+            .document(farmId)
+            .collection("followers")
+            .get()
+            .await()
+        return snap.size()
+    }
+
+    /**
+     * Get the number of users following this farm.
+     */
+    suspend fun getFollowingCount(userId: String): Int {
+        val snap = firestore
+            .collection("users")
+            .document(userId)
+            .collection("following")
+            .get()
+            .await()
+        return snap.size()
+    }
+
+
 
 }
