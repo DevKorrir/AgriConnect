@@ -55,6 +55,9 @@ import dev.korryr.agrimarket.ui.features.market.viewModel.MarketViewModel
 import dev.korryr.agrimarket.ui.features.posts.dataModel.dataClass.FarmPost
 import java.util.Calendar
 import com.google.firebase.auth.FirebaseAuth
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.remember
 
 @Composable
 fun MarketPostCard(
@@ -96,13 +99,22 @@ fun MarketPostCard(
     val userLiked by marketViewModel.selectedUserLiked.collectAsState()
     val commentCount by marketViewModel.selectedCommentCount.collectAsState()
     val bookmarked by marketViewModel.selectedBookmarked.collectAsState()
-    val followingFarm by marketViewModel.selectedUserFollows.collectAsState()
+    //val isFollowing by marketViewModel.selectedUserFollows.collectAsState()
+    val isFollowing by marketViewModel.isFollowing.collectAsState()
 
     //get current user id
     val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
 
     // check if is my post
-    val isMyPost = currentUserId == post.farmId
+    val isMyPost by remember {
+        derivedStateOf {
+            currentUserId == post.farmId
+        }
+    }
+
+    LaunchedEffect(post.farmId) {
+        marketViewModel.refreshFollowState(post.farmId)
+    }
 
     Card(
         modifier = Modifier
@@ -222,16 +234,16 @@ fun MarketPostCard(
                             },
                             modifier = Modifier.height(36.dp),
                             shape = RoundedCornerShape(18.dp),
-                            border = if (followingFarm) null else BorderStroke(
+                            border = if (isFollowing) null else BorderStroke(
                                 1.dp,
                                 MaterialTheme.colorScheme.primary
                             ),
                             colors = ButtonDefaults.outlinedButtonColors(
-                                containerColor = if (followingFarm)
+                                containerColor = if (isFollowing)
                                     MaterialTheme.colorScheme.primary
                                 else
                                     Color.Transparent,
-                                contentColor = if (followingFarm)
+                                contentColor = if (isFollowing)
                                     MaterialTheme.colorScheme.onPrimary
                                 else
                                     MaterialTheme.colorScheme.primary
@@ -242,12 +254,12 @@ fun MarketPostCard(
                                 horizontalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
                                 Icon(
-                                    imageVector = if (followingFarm) Icons.Default.Check else Icons.Default.PersonAdd,
+                                    imageVector = if (isFollowing) Icons.Default.Check else Icons.Default.PersonAdd,
                                     contentDescription = null,
                                     modifier = Modifier.size(16.dp)
                                 )
                                 Text(
-                                    if (followingFarm) "Following" else "Follow",
+                                    if (isFollowing) "Following" else "Follow",
                                     style = MaterialTheme.typography.bodySmall.copy(
                                         fontWeight = FontWeight.SemiBold,
                                         fontSize = 12.sp
