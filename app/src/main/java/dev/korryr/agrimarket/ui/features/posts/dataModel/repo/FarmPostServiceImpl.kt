@@ -1,14 +1,13 @@
 package dev.korryr.agrimarket.ui.features.posts.dataModel.repo
 
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
 import dev.korryr.agrimarket.ui.features.posts.dataModel.dataClass.FarmPost
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
-class FarmPostRepositoryImpl @Inject constructor(
+class FarmPostServiceImpl @Inject constructor(
     private val firestore: FirebaseFirestore
-) : FarmPostRepository {
+) : FarmPostService {
 
     private val postsCollection = firestore.collection("farm_posts")
 

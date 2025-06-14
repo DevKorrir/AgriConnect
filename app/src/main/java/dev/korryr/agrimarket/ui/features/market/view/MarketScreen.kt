@@ -104,7 +104,7 @@ fun MarketScreen(
                     brush = Brush.verticalGradient(
                         colors = listOf(
                             MaterialTheme.colorScheme.background,
-                            MaterialTheme.colorScheme.surface.copy(alpha = 0.3f)
+                            MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)
                         )
                     )
                 )
