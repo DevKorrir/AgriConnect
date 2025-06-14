@@ -14,7 +14,8 @@ import javax.inject.Singleton
 
 @Singleton
 class MarketRepository @Inject constructor(
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore,
+    private val auth: FirebaseAuth
 ) {
     /**
      * Reads all documents from Firestore “farm_posts” collection,
@@ -244,25 +245,82 @@ class MarketRepository @Inject constructor(
         }
     }
 
-    /** 11) Toggle “follow” for a farm */
-    fun toggleFollow(farmId: String) {
-        val firestore = FirebaseFirestore.getInstance()
-        val currentUser = FirebaseAuth.getInstance().currentUser?.uid ?: return
+    private val usersCollection = firestore.collection("users")
+    private val farmsCollection = firestore.collection("farms")
 
-        val followDoc = firestore
-            .collection("users")
+    /** 11) Toggle “follow” for a farm */
+     suspend fun toggleFollow(farmId: String): Boolean {
+        val currentUser = auth.currentUser?.uid
+            ?: throw IllegalStateException("User must be signed in")
+
+        // References for the two “links”
+        val userFollowRef = usersCollection
             .document(currentUser)
             .collection("following")
             .document(farmId)
 
-        followDoc.get().addOnSuccessListener { snap ->
-            if (snap.exists()) {
-                followDoc.delete()
-            } else {
-                followDoc.set(mapOf("timestamp" to FieldValue.serverTimestamp()))
-            }
+        val farmFollowerRef = farmsCollection
+            .document(farmId)
+            .collection("followers")
+            .document(currentUser)
+
+        // Read current state
+        val snap = userFollowRef.get().await()
+        return if (snap.exists()) {
+            // Unfollow path
+            userFollowRef.delete().await()
+            farmFollowerRef.delete().await()
+            false
+        } else {
+            // Follow path
+            val data = mapOf("timestamp" to FieldValue.serverTimestamp())
+            userFollowRef.set(data).await()
+            farmFollowerRef.set(data).await()
+            true
         }
     }
+
+    /**
+     * Check whether the current user already follows this farm.
+     */
+    suspend fun isFollowing(farmId: String): Boolean {
+        val currentUser = auth.currentUser?.uid
+            ?: return false
+        val snap = usersCollection
+            .document(currentUser)
+            .collection("following")
+            .document(farmId)
+            .get()
+            .await()
+        return snap.exists()
+    }
+
+    /**
+     * Get the number of followers for a farm.
+     */
+    suspend fun getFollowersCount(farmId: String): Int {
+        val snap = firestore
+            .collection("farms")
+            .document(farmId)
+            .collection("followers")
+            .get()
+            .await()
+        return snap.size()
+    }
+
+    /**
+     * Get the number of users following this farm.
+     */
+    suspend fun getFollowingCount(userId: String): Int {
+        val snap = firestore
+            .collection("users")
+            .document(userId)
+            .collection("following")
+            .get()
+            .await()
+        return snap.size()
+    }
+
 
 
 }

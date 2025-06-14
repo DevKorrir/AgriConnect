@@ -6,22 +6,24 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.korryr.agrimarket.ui.features.posts.dataModel.dataClass.FarmPost
-import dev.korryr.agrimarket.ui.features.posts.dataModel.repo.FarmPostRepositoryImpl
+import dev.korryr.agrimarket.ui.features.posts.dataModel.repo.FarmPostServiceImpl
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import androidx.core.net.toUri
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.tasks.await
 import java.util.UUID
 
 @HiltViewModel
 class FarmPostViewModel @Inject constructor(
-    private val repository: FarmPostRepositoryImpl,
+    private val repository: FarmPostServiceImpl,
     private val auth: FirebaseAuth,
-    private val storage: FirebaseStorage
+    private val storage: FirebaseStorage,
+    private val firestore: FirebaseFirestore
 ) : ViewModel() {
 
     private val _isPosting = MutableStateFlow(false)
@@ -73,6 +75,15 @@ class FarmPostViewModel @Inject constructor(
                 // 1. Get current user UID (farmId)
                 val uid = auth.currentUser?.uid ?: throw Exception("User not authenticated")
 
+                // 1a. Fetch that user’s FarmProfile from Firestore
+                val profileDoc = firestore
+                    .collection("farms")
+                    .document(uid)
+                    .get()
+                    .await()
+
+                val farmType = profileDoc.getString("typeOfFarming") ?: "Unknown"
+
                 // 2. Parse the local URI string back to Uri
                 val localUri: Uri = imageUrl.toUri()
 
@@ -93,7 +104,8 @@ class FarmPostViewModel @Inject constructor(
                     price = price,
                     quantity = quantity,
                     size = size,
-                    timestamp  = System.currentTimeMillis()
+                    timestamp  = System.currentTimeMillis(),
+                    type = farmType
                 )
 
                 // 6. Delegate to your repository to write this FarmPost into Firestore
