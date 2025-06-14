@@ -141,7 +141,30 @@ class MarketViewModel @Inject constructor(
     // Helpers to call toggles
     fun onToggleLike(postId: String) = repository.toggleLike(postId)
     fun onToggleBookmark(postId: String) = repository.toggleBookMark(postId)
-    fun onToggleFollow(farmId: String) = repository.toggleFollow(farmId)
+
+    // follow/ following
+    private val _isFollowing = MutableStateFlow(false)
+    val isFollowing: StateFlow<Boolean> = _isFollowing.asStateFlow()
+
+    /**
+     * Call this when you first display a post, to load the button state.
+     */
+    fun refreshFollowState(farmId: String) {
+        viewModelScope.launch {
+            _isFollowing.value = repository.isFollowing(farmId)
+        }
+    }
+
+    /**
+     * Called from your composable when the user taps Follow/Unfollow.
+     */
+    fun onToggleFollow(farmId: String) {
+        viewModelScope.launch {
+            // This suspend call will flip Firestore and return the new state.
+            val newState = repository.toggleFollow(farmId)
+            _isFollowing.value = newState
+        }
+    }
 
     // Call these when UI “selects” a post or farm to see details
     fun selectPost(postId: String) {
