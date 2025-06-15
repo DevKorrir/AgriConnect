@@ -193,8 +193,8 @@ class MarketRepository @Inject constructor(
     fun streamFollowerCount(farmId: String): Flow<Int> = callbackFlow {
         // Example: if you store each user’s “following” array, you can query “whereArrayContains”
         val subscription = firestore
-            .collection("users")
-            .whereArrayContains("following", farmId)
+            .collection("farms").document(farmId)
+            .collection("followers")
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
                     close(error)
@@ -206,24 +206,22 @@ class MarketRepository @Inject constructor(
     }
 
     /** 9) Toggle “like” for a post (non‐Composable) */
-    fun toggleLike(postId: String) {
-        val firestore = FirebaseFirestore.getInstance()
-        val currentUser = FirebaseAuth.getInstance().currentUser?.uid ?: return
+    suspend fun toggleLike(postId: String): Boolean {
+        val userId = auth.currentUser?.uid ?: return false
+        val likeRef = firestore
+            .collection("farm_posts").document(postId)
+            .collection("likes").document(userId)
 
-        val likeDoc = firestore
-            .collection("farm_posts")
-            .document(postId)
-            .collection("likes")
-            .document(currentUser)
-
-        likeDoc.get().addOnSuccessListener { documentSnapshot ->
-            if (documentSnapshot.exists()) {
-                likeDoc.delete()
-            } else {
-                likeDoc.set(mapOf("timestamp" to FieldValue.serverTimestamp()))
-            }
+        val snap = likeRef.get().await()
+        return if (snap.exists()) {
+            likeRef.delete().await()
+            false
+        } else {
+            likeRef.set(mapOf("timestamp" to FieldValue.serverTimestamp())).await()
+            true
         }
     }
+
 
     /** 10) Toggle “bookmark” for a post */
     fun toggleBookMark(postId: String) {
@@ -249,7 +247,7 @@ class MarketRepository @Inject constructor(
     private val farmsCollection = firestore.collection("farms")
 
     /** 11) Toggle “follow” for a farm */
-     suspend fun toggleFollow(farmId: String): Boolean {
+    suspend fun toggleFollow(farmId: String): Boolean {
         val currentUser = auth.currentUser?.uid
             ?: throw IllegalStateException("User must be signed in")
 
@@ -320,7 +318,6 @@ class MarketRepository @Inject constructor(
             .await()
         return snap.size()
     }
-
 
 
 }

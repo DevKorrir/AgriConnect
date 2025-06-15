@@ -316,26 +316,27 @@ fun MarketScreen(
                                 post = post,
                                 farmProfile = farmProfiles[post.farmId],
                                 onPostClick = {
-                                    marketViewModel.selectPost(post.postId)
+                                    //marketViewModel.selectPost(post.postId)
                                    // onPostClick(post)
                                 },
                                 onProfileClick = {
-                                    marketViewModel.selectFarm(post.farmId)
+                                    //marketViewModel.selectFarm(post.farmId)
                                     //onProfileClick(post.farmId)
                                 },
+
                                 onFollowClick = { farmId ->
                                     marketViewModel.onToggleFollow(farmId)
-                                    //onFollowClick(farmId)
                                 },
+
                                 onLikeClick = { postId ->
-                                    marketViewModel.onToggleLike(postId)
+                                    //marketViewModel.onToggleLike(postId)
                                     //onLikeClick(postId)
                                 },
                                 onCommentClick = { postId ->
                                     //onCommentClick(postId)
                                 },
                                 onBookmarkClick = { postId ->
-                                    marketViewModel.onToggleBookmark(postId)
+                                    //marketViewModel.onToggleBookmark(postId)
                                     //onBookmarkClick(postId)
                                 }
                             )

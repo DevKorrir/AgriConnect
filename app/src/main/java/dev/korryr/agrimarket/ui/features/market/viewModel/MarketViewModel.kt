@@ -160,7 +160,7 @@ class MarketViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     // Helpers to call toggles
-    fun onToggleLike(postId: String) = repository.toggleLike(postId)
+    suspend fun onToggleLike(postId: String) = repository.toggleLike(postId)
     fun onToggleBookmark(postId: String) = repository.toggleBookMark(postId)
 
     // follow/ following
