@@ -106,7 +106,7 @@ class MarketRepository @Inject constructor(
 
     // 4) Stream “did current user like this post?”
     fun streamUserLiked(postId: String): Flow<Boolean> = callbackFlow {
-        val currentUser = FirebaseAuth.getInstance().currentUser?.uid
+        val currentUser = auth.currentUser?.uid
         if (currentUser == null) {
             trySend(false)
             close()

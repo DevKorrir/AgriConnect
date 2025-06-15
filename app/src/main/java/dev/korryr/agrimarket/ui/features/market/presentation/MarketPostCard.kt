@@ -95,8 +95,8 @@ fun MarketPostCard(
         } ?: "Unknown"// fallback if post.timestamp is null
     } ?: "" // fall back if profile ids null
 
-    val likeCount by marketViewModel.selectedLikeCount.collectAsState()
-    val userLiked by marketViewModel.selectedUserLiked.collectAsState()
+    //val likeCount by marketViewModel.selectedLikeCount.collectAsState()
+    //val userLiked by marketViewModel.selectedUserLiked.collectAsState()
     val commentCount by marketViewModel.selectedCommentCount.collectAsState()
     val bookmarked by marketViewModel.selectedBookmarked.collectAsState()
     //val isFollowing by marketViewModel.selectedUserFollows.collectAsState()
@@ -111,6 +111,19 @@ fun MarketPostCard(
             currentUserId == post.farmId
         }
     }
+
+    LaunchedEffect(post.postId) {
+        marketViewModel.observePostInteractions(post.postId)
+    }
+
+    // Collect states - these will be consistent and won't flicker
+    val likeState by marketViewModel.getLikeStateForPost(post.postId).collectAsState()
+
+    // Extract individual properties to avoid showing the whole object
+    val likeCount = likeState.likeCount
+    val isLiked = likeState.isLiked
+    //val commentCount = likeState.commentCount
+    val isBookmarked = likeState.isBookmarked
 
     LaunchedEffect(post.farmId) {
         marketViewModel.refreshFollowState(post.farmId)
@@ -367,15 +380,15 @@ fun MarketPostCard(
                             .padding(2.dp)
                     ) {
                         Icon(
-                            imageVector = if (userLiked) Icons.Default.Favorite else Icons.Outlined.FavoriteBorder,
+                            imageVector = if (isLiked) Icons.Default.Favorite else Icons.Outlined.FavoriteBorder,
                             contentDescription = "Like",
-                            tint = if (userLiked) Color.Red else MaterialTheme.colorScheme.onSurface.copy(
+                            tint = if (isLiked) Color.Red else MaterialTheme.colorScheme.onSurface.copy(
                                 alpha = 0.7f
                             ),
                             modifier = Modifier.size(24.dp)
                         )
                         Text(
-                            text = "$likeCount",
+                            text = likeCount.toString(),
                             style = MaterialTheme.typography.bodySmall.copy(
                                 fontWeight = FontWeight.Medium,
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)

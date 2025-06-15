@@ -329,9 +329,9 @@ fun MarketScreen(
                                 },
 
                                 onLikeClick = { postId ->
-                                    //marketViewModel.onToggleLike(postId)
-                                    //onLikeClick(postId)
+                                    marketViewModel.onToggleLike(postId)
                                 },
+
                                 onCommentClick = { postId ->
                                     //onCommentClick(postId)
                                 },
