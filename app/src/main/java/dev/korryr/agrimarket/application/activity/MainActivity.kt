@@ -23,7 +23,7 @@ class MainActivity : ComponentActivity() {
             val paddingValues = PaddingValues()
             val themeManager: ThemeViewModel = viewModel()
 
-            AgriMarketTheme (
+            AgriMarketTheme(
                 darkTheme = themeManager.isDarkThemeEnabled
             ){
                 //Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->

@@ -6,9 +6,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeContent
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -37,12 +35,12 @@ import dev.korryr.agrimarket.ui.features.auth.phoneAuth.viewModel.AuthUiState
 import dev.korryr.agrimarket.ui.features.auth.phoneAuth.viewModel.AuthViewModel
 import dev.korryr.agrimarket.ui.features.auth.preferences.AuthPreferencesRepository
 import dev.korryr.agrimarket.ui.features.bottomNav.viewModel.BottomScreens
-import dev.korryr.agrimarket.ui.features.posts.view.CreatePostScreen
 import dev.korryr.agrimarket.ui.features.farm.view.FarmProfileScreen
 import dev.korryr.agrimarket.ui.features.home.HomePage
 import dev.korryr.agrimarket.ui.features.market.view.MarketScreen
 import dev.korryr.agrimarket.ui.features.messages.view.MessageScreen
 import dev.korryr.agrimarket.ui.features.orders.view.OrderScreen
+import dev.korryr.agrimarket.ui.features.posts.view.CreatePostScreen
 import dev.korryr.agrimarket.ui.features.settings.view.SettingsScreen
 import dev.korryr.agrimarket.ui.features.settings.view.apperances.view.AppearanceScreen
 import dev.korryr.agrimarket.ui.features.welcome.AgribuzWelcomeScreen
@@ -253,7 +251,6 @@ fun NavGraph(
                     modifier = Modifier.padding(scaffoldPadding)
                 ) {
                     HomePage(
-
                         onNavigate = { route ->
                             navController.navigate(route)
                         },
