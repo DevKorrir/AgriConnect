@@ -95,8 +95,8 @@ fun MarketPostCard(
         } ?: "Unknown"// fallback if post.timestamp is null
     } ?: "" // fall back if profile ids null
 
-    val likeCount by marketViewModel.selectedLikeCount.collectAsState()
-    val userLiked by marketViewModel.selectedUserLiked.collectAsState()
+    //val likeCount by marketViewModel.selectedLikeCount.collectAsState()
+    //val userLiked by marketViewModel.selectedUserLiked.collectAsState()
     val commentCount by marketViewModel.selectedCommentCount.collectAsState()
     val bookmarked by marketViewModel.selectedBookmarked.collectAsState()
     //val isFollowing by marketViewModel.selectedUserFollows.collectAsState()
@@ -111,6 +111,19 @@ fun MarketPostCard(
             currentUserId == post.farmId
         }
     }
+
+    LaunchedEffect(post.postId) {
+        marketViewModel.observePostInteractions(post.postId)
+    }
+
+    // Collect states - these will be consistent and won't flicker
+    val likeState by marketViewModel.getLikeStateForPost(post.postId).collectAsState()
+
+    // Extract individual properties to avoid showing the whole object
+    val likeCount = likeState.likeCount
+    val isLiked = likeState.isLiked
+    //val commentCount = likeState.commentCount
+    val isBookmarked = likeState.isBookmarked
 
     LaunchedEffect(post.farmId) {
         marketViewModel.refreshFollowState(post.farmId)
@@ -229,9 +242,7 @@ fun MarketPostCard(
                     } else {
                         // Follow Button / unfollow
                         OutlinedButton(
-                            onClick = {
-                                marketViewModel.onToggleFollow(post.farmId)
-                            },
+                            onClick = { onFollowClick(post.farmId) },
                             modifier = Modifier.height(36.dp),
                             shape = RoundedCornerShape(18.dp),
                             border = if (isFollowing) null else BorderStroke(
@@ -361,21 +372,23 @@ fun MarketPostCard(
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        modifier = Modifier.clickable {
-                            marketViewModel.onToggleLike(post.postId)
-                            //onLikeClick(post.postId)
-                        }
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .clickable {
+                                onLikeClick(post.postId)
+                            }
+                            .padding(2.dp)
                     ) {
                         Icon(
-                            imageVector = if (userLiked) Icons.Default.Favorite else Icons.Outlined.FavoriteBorder,
+                            imageVector = if (isLiked) Icons.Default.Favorite else Icons.Outlined.FavoriteBorder,
                             contentDescription = "Like",
-                            tint = if (userLiked) Color.Red else MaterialTheme.colorScheme.onSurface.copy(
+                            tint = if (isLiked) Color.Red else MaterialTheme.colorScheme.onSurface.copy(
                                 alpha = 0.7f
                             ),
                             modifier = Modifier.size(24.dp)
                         )
                         Text(
-                            text = "$likeCount",
+                            text = likeCount.toString(),
                             style = MaterialTheme.typography.bodySmall.copy(
                                 fontWeight = FontWeight.Medium,
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
@@ -387,7 +400,10 @@ fun MarketPostCard(
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        modifier = Modifier.clickable { onCommentClick(post.description) }
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .clickable { onCommentClick(post.description) }
+                            .padding(2.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.ChatBubbleOutline,
@@ -410,8 +426,10 @@ fun MarketPostCard(
                         contentDescription = "Share",
                         tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                         modifier = Modifier
+                            .clip(CircleShape)
                             .size(24.dp)
                             .clickable { /* Handle share */ }
+                            .padding(2.dp)
                     )
                 }
 
@@ -425,7 +443,6 @@ fun MarketPostCard(
                     modifier = Modifier
                         .size(24.dp)
                         .clickable {
-                            marketViewModel.onToggleBookmark(post.postId)
                             onBookmarkClick(post.postId)
                         }
                 )

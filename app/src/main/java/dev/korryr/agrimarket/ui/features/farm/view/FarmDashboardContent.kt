@@ -73,7 +73,6 @@ fun FarmDashboardContent(
 
     // 3) Collect recentPosts state
     val recentPosts by farmPostViewModel.recentPosts.collectAsState()
-    //val postsCount by marketViewModel.postsCount.collectAsState()
     val followCount by marketViewModel.followersCount.collectAsState()
     val followingCount by marketViewModel.followingCount.collectAsState()
 
@@ -418,30 +417,5 @@ private fun SingleRecentPostItem(
                 style = MaterialTheme.typography.bodySmall.copy(color = SecondaryTextLight)
             )
         }
-    }
-}
-
-/**
- * A helper composable to show a label + numeric value in a column.
- * You can customize styling as needed (e.g. icon above, text below, etc.).
- */
-@Composable
-fun StatisticItem(label: String, value: String) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = value,
-            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyMedium.copy(
-                color = MaterialTheme.colorScheme.onSurface.copy(
-                    alpha = 0.6f
-                )
-            )
-        )
     }
 }

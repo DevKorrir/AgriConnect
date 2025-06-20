@@ -38,8 +38,10 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -57,6 +59,8 @@ import dev.korryr.agrimarket.ui.features.home.model.DashboardItem
 import dev.korryr.agrimarket.ui.features.home.model.NavItem
 import dev.korryr.agrimarket.ui.features.home.model.TaskItem
 import dev.korryr.agrimarket.ui.features.home.view.HomeContent
+import dev.korryr.agrimarket.ui.features.home.view.HomeContentShimmer
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -230,12 +234,25 @@ fun HomePage(
                 end = innerPaddingValues.calculateEndPadding(LocalLayoutDirection.current)
 
             )
-            HomeContent(
-                dashboardItems = dashboardItems,
-                taskItems = taskItems,
-                modifier = Modifier.padding(innerPaddingValues),
-                contentPadding = combinedPadding
-            )
+            var isLoading by remember { mutableStateOf(true) }
+            var visible by remember { mutableStateOf(false) }
+
+            LaunchedEffect(Unit) {
+                delay(7000) // 2 seconds loading time
+                isLoading = false
+                visible = true
+            }
+
+            if (isLoading) {
+                HomeContentShimmer(contentPadding = combinedPadding)
+            } else {
+                HomeContent(
+                    dashboardItems = dashboardItems,
+                    taskItems = taskItems,
+                    modifier = Modifier.padding(innerPaddingValues),
+                    contentPadding = combinedPadding
+                )
+            }
         }
     }
 }
