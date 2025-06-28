@@ -364,7 +364,7 @@ fun MarketScreen(
 
                                 },
                                 onBookmarkClick = { postId ->
-                                    //marketViewModel.onToggleBookmark(postId)
+                                    marketViewModel.onToggleBookmark(postId)
                                     //onBookmarkClick(postId)
                                 },
 
