@@ -106,7 +106,7 @@ class MarketRepository @Inject constructor(
 
     // 4) Stream “did current user like this post?”
     fun streamUserLiked(postId: String): Flow<Boolean> = callbackFlow {
-        val currentUser = FirebaseAuth.getInstance().currentUser?.uid
+        val currentUser = auth.currentUser?.uid
         if (currentUser == null) {
             trySend(false)
             close()
@@ -166,64 +166,62 @@ class MarketRepository @Inject constructor(
         awaitClose { subscription.remove() }
     }
 
-    // 7) Stream follow state for a farm
-    fun streamUserFollows(farmId: String): Flow<Boolean> = callbackFlow {
-        val currentUser = FirebaseAuth.getInstance().currentUser?.uid
-        if (currentUser == null) {
-            trySend(false)
-            close()
-            return@callbackFlow
-        }
-        val subscription = firestore
-            .collection("users")
-            .document(currentUser)
-            .collection("following")
-            .document(farmId)
-            .addSnapshotListener { snapshot, error ->
-                if (error != null) {
-                    close(error)
-                    return@addSnapshotListener
-                }
-                trySend(snapshot?.exists() == true)
-            }
-        awaitClose { subscription.remove() }
-    }
-
-    /** 8) Stream “follower count” for a given farm (if you store follower lists) */
-    fun streamFollowerCount(farmId: String): Flow<Int> = callbackFlow {
-        // Example: if you store each user’s “following” array, you can query “whereArrayContains”
-        val subscription = firestore
-            .collection("users")
-            .whereArrayContains("following", farmId)
-            .addSnapshotListener { snapshot, error ->
-                if (error != null) {
-                    close(error)
-                    return@addSnapshotListener
-                }
-                trySend(snapshot?.size() ?: 0)
-            }
-        awaitClose { subscription.remove() }
-    }
+//    // 7) Stream follow state for a farm
+//    fun streamUserFollows(farmId: String): Flow<Boolean> = callbackFlow {
+//        val currentUser = FirebaseAuth.getInstance().currentUser?.uid
+//        if (currentUser == null) {
+//            trySend(false)
+//            close()
+//            return@callbackFlow
+//        }
+//        val subscription = firestore
+//            .collection("users")
+//            .document(currentUser)
+//            .collection("following")
+//            .document(farmId)
+//            .addSnapshotListener { snapshot, error ->
+//                if (error != null) {
+//                    close(error)
+//                    return@addSnapshotListener
+//                }
+//                trySend(snapshot?.exists() == true)
+//            }
+//        awaitClose { subscription.remove() }
+//    }
+//
+//    /** 8) Stream “follower count” for a given farm (if you store follower lists) */
+//    fun streamFollowerCount(farmId: String): Flow<Int> = callbackFlow {
+//        // Example: if you store each user’s “following” array, you can query “whereArrayContains”
+//        val subscription = firestore
+//            .collection("farms").document(farmId)
+//            .collection("followers")
+//            .addSnapshotListener { snapshot, error ->
+//                if (error != null) {
+//                    close(error)
+//                    return@addSnapshotListener
+//                }
+//                trySend(snapshot?.size() ?: 0)
+//            }
+//        awaitClose { subscription.remove() }
+//    }
 
     /** 9) Toggle “like” for a post (non‐Composable) */
-    fun toggleLike(postId: String) {
-        val firestore = FirebaseFirestore.getInstance()
-        val currentUser = FirebaseAuth.getInstance().currentUser?.uid ?: return
+    suspend fun toggleLike(postId: String): Boolean {
+        val userId = auth.currentUser?.uid ?: return false
+        val likeRef = firestore
+            .collection("farm_posts").document(postId)
+            .collection("likes").document(userId)
 
-        val likeDoc = firestore
-            .collection("farm_posts")
-            .document(postId)
-            .collection("likes")
-            .document(currentUser)
-
-        likeDoc.get().addOnSuccessListener { documentSnapshot ->
-            if (documentSnapshot.exists()) {
-                likeDoc.delete()
-            } else {
-                likeDoc.set(mapOf("timestamp" to FieldValue.serverTimestamp()))
-            }
+        val snap = likeRef.get().await()
+        return if (snap.exists()) {
+            likeRef.delete().await()
+            false
+        } else {
+            likeRef.set(mapOf("timestamp" to FieldValue.serverTimestamp())).await()
+            true
         }
     }
+
 
     /** 10) Toggle “bookmark” for a post */
     fun toggleBookMark(postId: String) {
@@ -249,7 +247,7 @@ class MarketRepository @Inject constructor(
     private val farmsCollection = firestore.collection("farms")
 
     /** 11) Toggle “follow” for a farm */
-     suspend fun toggleFollow(farmId: String): Boolean {
+    suspend fun toggleFollow(farmId: String): Boolean {
         val currentUser = auth.currentUser?.uid
             ?: throw IllegalStateException("User must be signed in")
 
@@ -320,7 +318,6 @@ class MarketRepository @Inject constructor(
             .await()
         return snap.size()
     }
-
 
 
 }

@@ -1,5 +1,6 @@
 package dev.korryr.agrimarket.ui.features.market.view
 
+import android.content.Intent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -26,6 +27,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -47,6 +49,7 @@ fun MarketScreen(
     onBookmarkClick: (String) -> Unit = {},
     navController: NavHostController
 ) {
+    val context = LocalContext.current
 
     var visible by remember { mutableStateOf(false) }
 
@@ -316,28 +319,55 @@ fun MarketScreen(
                                 post = post,
                                 farmProfile = farmProfiles[post.farmId],
                                 onPostClick = {
-                                    marketViewModel.selectPost(post.postId)
-                                   // onPostClick(post)
+                                    //marketViewModel.selectPost(post.postId)
+                                    // onPostClick(post)
                                 },
                                 onProfileClick = {
-                                    marketViewModel.selectFarm(post.farmId)
+                                    //marketViewModel.selectFarm(post.farmId)
                                     //onProfileClick(post.farmId)
                                 },
+
                                 onFollowClick = { farmId ->
                                     marketViewModel.onToggleFollow(farmId)
-                                    //onFollowClick(farmId)
                                 },
+
                                 onLikeClick = { postId ->
                                     marketViewModel.onToggleLike(postId)
-                                    //onLikeClick(postId)
                                 },
+
                                 onCommentClick = { postId ->
                                     //onCommentClick(postId)
+                                },
+                                onShareClick = { postId ->
+                                    val currentFarmId: String = post.farmId
+                                    val farmProfile = farmProfiles[currentFarmId]
+                                    val name = farmProfile?.farmName
+                                    // Find the post by ID or pass the post object
+                                    val shareText = buildString {
+                                        append(" Check out this amazing farm product!\n\n")
+                                        append("${post.description}\n")
+                                        append("Price: KES ${"%,.2f".format(post.price)}\n")
+                                        append("Quantity: ${post.quantity} ${post.unit}\n")
+                                        append("Category: ${post.type}\n")
+                                        append("From: $name\n\n")
+                                        append("Shared via AgriMarket 🚜✨")
+                                    }
+
+                                    val shareIntent = Intent().apply {
+                                        action = Intent.ACTION_SEND
+                                        type = "text/plain"
+                                        putExtra(Intent.EXTRA_TEXT, shareText)
+                                        putExtra(Intent.EXTRA_SUBJECT, " ${post.type} from $name - AgriMarket")
+                                    }
+                                    val chooserIntent = Intent.createChooser(shareIntent, "Share this farm product! 🌱")
+                                    context.startActivity(chooserIntent)
+
                                 },
                                 onBookmarkClick = { postId ->
                                     marketViewModel.onToggleBookmark(postId)
                                     //onBookmarkClick(postId)
-                                }
+                                },
+
                             )
                         }
                     }

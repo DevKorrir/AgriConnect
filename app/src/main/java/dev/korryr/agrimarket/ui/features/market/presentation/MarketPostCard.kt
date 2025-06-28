@@ -18,8 +18,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.BrokenImage
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.PersonAdd
@@ -30,13 +30,17 @@ import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,20 +48,19 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
+import com.google.firebase.auth.FirebaseAuth
 import dev.korryr.agrimarket.ui.features.farm.data.model.FarmProfile
 import dev.korryr.agrimarket.ui.features.market.viewModel.MarketViewModel
 import dev.korryr.agrimarket.ui.features.posts.dataModel.dataClass.FarmPost
 import java.util.Calendar
-import com.google.firebase.auth.FirebaseAuth
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.remember
 
 @Composable
 fun MarketPostCard(
@@ -69,11 +72,22 @@ fun MarketPostCard(
     onLikeClick: (String) -> Unit,
     onCommentClick: (String) -> Unit,
     onBookmarkClick: (String) -> Unit,
-    marketViewModel: MarketViewModel = hiltViewModel()
+    onShareClick: (String) -> Unit,
+    marketViewModel: MarketViewModel = hiltViewModel(),
 ) {
     // fetch farmer profile in real time
     val profileName = farmProfile?.farmName ?: "Unknown"
     val profileImageUrl = farmProfile?.imageUrl ?: ""
+
+    // Image loading states for post image
+    val postImagePainter = rememberAsyncImagePainter(
+        model = post.imageUrl,
+    )
+
+    // Image loading states for profile image
+    val profileImagePainter = rememberAsyncImagePainter(
+        model = profileImageUrl,
+    )
 
     // 2) Compute “days ago” from post.timestamp (if you stored a Firestore Timestamp)
     //    If your FarmPost has a `timestamp: com.google.firebase.Timestamp` field, do:
@@ -95,8 +109,8 @@ fun MarketPostCard(
         } ?: "Unknown"// fallback if post.timestamp is null
     } ?: "" // fall back if profile ids null
 
-    val likeCount by marketViewModel.selectedLikeCount.collectAsState()
-    val userLiked by marketViewModel.selectedUserLiked.collectAsState()
+    //val likeCount by marketViewModel.selectedLikeCount.collectAsState()
+    //val userLiked by marketViewModel.selectedUserLiked.collectAsState()
     val commentCount by marketViewModel.selectedCommentCount.collectAsState()
     val bookmarked by marketViewModel.selectedBookmarked.collectAsState()
     //val isFollowing by marketViewModel.selectedUserFollows.collectAsState()
@@ -111,6 +125,19 @@ fun MarketPostCard(
             currentUserId == post.farmId
         }
     }
+
+    LaunchedEffect(post.postId) {
+        marketViewModel.observePostInteractions(post.postId)
+    }
+
+    // Collect states - these will be consistent and won't flicker
+    val likeState by marketViewModel.getLikeStateForPost(post.postId).collectAsState()
+
+    // Extract individual properties to avoid showing the whole object
+    val likeCount = likeState.likeCount
+    val isLiked = likeState.isLiked
+    //val commentCount = likeState.commentCount
+    val isBookmarked = likeState.isBookmarked
 
     LaunchedEffect(post.farmId) {
         marketViewModel.refreshFollowState(post.farmId)
@@ -165,9 +192,12 @@ fun MarketPostCard(
                             )
                             .padding(2.dp)
                     ) {
+
+
                         if (profileImageUrl.isNotBlank()) {
+
                             Image(
-                                painter = rememberAsyncImagePainter(profileImageUrl),
+                                painter = profileImagePainter,
                                 contentDescription = "Profile",
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier
@@ -175,6 +205,23 @@ fun MarketPostCard(
                                     .clip(CircleShape)
                                     .background(MaterialTheme.colorScheme.surface)
                             )
+
+                            // Show loading indicator if the image is in loading state
+                            if (profileImagePainter.state is AsyncImagePainter.State.Loading) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .clip(CircleShape)
+                                        .background(MaterialTheme.colorScheme.surface),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(20.dp),
+                                        strokeWidth = 2.dp,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
                         } else {
                             // If no profile image URL, show a placeholder circle
                             Box(
@@ -220,18 +267,42 @@ fun MarketPostCard(
                         // Option A: show nothing
                         Spacer(modifier = Modifier.width(16.dp))
 
-                        // Option B: show a disabled “Owner” badge instead
-                        Text(
-                            text = "Owner",
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium),
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                        )
+//                        // Option B: show a disabled “Owner” badge instead
+//                        Card(
+//                            shape = RoundedCornerShape(20.dp),
+//                            colors = CardDefaults.cardColors(
+//                                containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+//                            ),
+//                            border = BorderStroke(
+//                                1.dp,
+//                                MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+//                            )
+//                        ) {
+//                            Row(
+//                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+//                                verticalAlignment = Alignment.CenterVertically,
+//                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+//                            ) {
+//                                Icon(
+//                                    imageVector = Icons.Default.KingBed,
+//                                    contentDescription = "Owner",
+//                                    tint = MaterialTheme.colorScheme.primary,
+//                                    modifier = Modifier.size(14.dp)
+//                                )
+//                                Text(
+//                                    text = "Owner",
+//                                    style = MaterialTheme.typography.labelSmall.copy(
+//                                        fontWeight = FontWeight.SemiBold,
+//                                        fontSize = 11.sp
+//                                    ),
+//                                    color = MaterialTheme.colorScheme.primary
+//                                )
+//                            }
+//                        }
                     } else {
                         // Follow Button / unfollow
                         OutlinedButton(
-                            onClick = {
-                                marketViewModel.onToggleFollow(post.farmId)
-                            },
+                            onClick = { onFollowClick(post.farmId) },
                             modifier = Modifier.height(36.dp),
                             shape = RoundedCornerShape(18.dp),
                             border = if (isFollowing) null else BorderStroke(
@@ -279,15 +350,40 @@ fun MarketPostCard(
                     .height(280.dp)
                     .clickable { onPostClick() }
             ) {
+
                 if (post.imageUrl.isNotBlank()) {
                     Image(
-                        painter = rememberAsyncImagePainter(post.imageUrl),
+                        painter = postImagePainter,
                         contentDescription = "Product Image",
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
                             .fillMaxSize()
                             .clip(RoundedCornerShape(12.dp))
                     )
+
+                    if (postImagePainter.state is AsyncImagePainter.State.Loading) {
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(
+                                    brush = Brush.verticalGradient(
+                                        colors = listOf(
+                                            MaterialTheme.colorScheme.primary.copy(alpha = 0.05f),
+                                            MaterialTheme.colorScheme.tertiary.copy(alpha = 0.05f)
+                                        )
+                                    )
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+
+                            CircularProgressIndicator(
+                                modifier = Modifier.align(Alignment.Center),
+                                color = MaterialTheme.colorScheme.primary,
+                                strokeWidth = 4.dp
+                            )
+                        }
+                    }
                 } else {
                     // Placeholder when there’s no image URL
                     Box(
@@ -296,8 +392,8 @@ fun MarketPostCard(
                             .background(
                                 brush = Brush.verticalGradient(
                                     colors = listOf(
-                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                                        MaterialTheme.colorScheme.tertiary.copy(alpha = 0.1f)
+                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.05f),
+                                        MaterialTheme.colorScheme.tertiary.copy(alpha = 0.05f)
                                     )
                                 )
                             ),
@@ -308,10 +404,10 @@ fun MarketPostCard(
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Default.AddAPhoto,
+                                imageVector = Icons.Default.BrokenImage,
                                 contentDescription = "No image",
                                 tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                                modifier = Modifier.size(48.dp)
+                                modifier = Modifier.size(80.dp)
                             )
                             Text(
                                 "No Image Available",
@@ -361,21 +457,23 @@ fun MarketPostCard(
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        modifier = Modifier.clickable {
-                            marketViewModel.onToggleLike(post.postId)
-                            //onLikeClick(post.postId)
-                        }
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .clickable {
+                                onLikeClick(post.postId)
+                            }
+                            .padding(2.dp)
                     ) {
                         Icon(
-                            imageVector = if (userLiked) Icons.Default.Favorite else Icons.Outlined.FavoriteBorder,
+                            imageVector = if (isLiked) Icons.Default.Favorite else Icons.Outlined.FavoriteBorder,
                             contentDescription = "Like",
-                            tint = if (userLiked) Color.Red else MaterialTheme.colorScheme.onSurface.copy(
+                            tint = if (isLiked) Color.Red else MaterialTheme.colorScheme.onSurface.copy(
                                 alpha = 0.7f
                             ),
                             modifier = Modifier.size(24.dp)
                         )
                         Text(
-                            text = "$likeCount",
+                            text = likeCount.toString(),
                             style = MaterialTheme.typography.bodySmall.copy(
                                 fontWeight = FontWeight.Medium,
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
@@ -387,7 +485,10 @@ fun MarketPostCard(
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        modifier = Modifier.clickable { onCommentClick(post.description) }
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .clickable { onCommentClick(post.description) }
+                            .padding(2.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.ChatBubbleOutline,
@@ -404,14 +505,19 @@ fun MarketPostCard(
                         )
                     }
 
+                    val context = LocalContext.current
                     // Share Button
                     Icon(
                         imageVector = Icons.Outlined.Share,
                         contentDescription = "Share",
                         tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                         modifier = Modifier
+                            .clip(CircleShape)
                             .size(24.dp)
-                            .clickable { /* Handle share */ }
+                            .clickable {
+                                onShareClick(post.postId)
+                            }
+                            .padding(2.dp)
                     )
                 }
 
@@ -425,7 +531,6 @@ fun MarketPostCard(
                     modifier = Modifier
                         .size(24.dp)
                         .clickable {
-                            marketViewModel.onToggleBookmark(post.postId)
                             onBookmarkClick(post.postId)
                         }
                 )
