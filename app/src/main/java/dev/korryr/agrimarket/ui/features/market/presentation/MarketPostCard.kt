@@ -193,63 +193,53 @@ fun MarketPostCard(
                             .padding(2.dp)
                     ) {
 
-                        Image(
-                            painter = profileImagePainter,
-                            contentDescription = "Profile",
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.surface)
-                        )
 
-                        // Show loading indicator if the image is in loading state
-                        if (profileImagePainter.state is AsyncImagePainter.State.Loading) {
+                        if (profileImageUrl.isNotBlank()) {
+
+                            Image(
+                                painter = profileImagePainter,
+                                contentDescription = "Profile",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.surface)
+                            )
+
+                            // Show loading indicator if the image is in loading state
+                            if (profileImagePainter.state is AsyncImagePainter.State.Loading) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .clip(CircleShape)
+                                        .background(MaterialTheme.colorScheme.surface),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(20.dp),
+                                        strokeWidth = 2.dp,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
+                        } else {
+                            // If no profile image URL, show a placeholder circle
                             Box(
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .clip(CircleShape)
-                                    .background(MaterialTheme.colorScheme.surface),
+                                    .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)),
                                 contentAlignment = Alignment.Center
                             ) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(20.dp),
-                                    strokeWidth = 2.dp,
-                                    color = MaterialTheme.colorScheme.primary
+                                Icon(
+                                    imageVector = Icons.Default.PersonAdd,
+                                    contentDescription = "No Profile",
+                                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+                                    modifier = Modifier.size(24.dp)
                                 )
                             }
                         }
                     }
-
-
-//                        if (profileImageUrl.isNotBlank()) {
-//               Image(
-//                                painter = rememberAsyncImagePainter(profileImageUrl),
-//                                contentDescription = "Profile",
-//                                contentScale = ContentScale.Crop,
-//                                modifier = Modifier
-//                                    .fillMaxSize()
-//                                    .clip(CircleShape)
-//                                    .background(MaterialTheme.colorScheme.surface)
-//                            )
-//                        } else {
-//                            // If no profile image URL, show a placeholder circle
-//                            Box(
-//                                modifier = Modifier
-//                                    .fillMaxSize()
-//                                    .clip(CircleShape)
-//                                    .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)),
-//                                contentAlignment = Alignment.Center
-//                            ) {
-//                                Icon(
-//                                    imageVector = Icons.Default.PersonAdd,
-//                                    contentDescription = "No Profile",
-//                                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
-//                                    modifier = Modifier.size(24.dp)
-//                                )
-//                            }
-//                        }
-//                    }
 
                     Column {
                         Text(

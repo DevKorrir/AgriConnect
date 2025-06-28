@@ -166,44 +166,44 @@ class MarketRepository @Inject constructor(
         awaitClose { subscription.remove() }
     }
 
-    // 7) Stream follow state for a farm
-    fun streamUserFollows(farmId: String): Flow<Boolean> = callbackFlow {
-        val currentUser = FirebaseAuth.getInstance().currentUser?.uid
-        if (currentUser == null) {
-            trySend(false)
-            close()
-            return@callbackFlow
-        }
-        val subscription = firestore
-            .collection("users")
-            .document(currentUser)
-            .collection("following")
-            .document(farmId)
-            .addSnapshotListener { snapshot, error ->
-                if (error != null) {
-                    close(error)
-                    return@addSnapshotListener
-                }
-                trySend(snapshot?.exists() == true)
-            }
-        awaitClose { subscription.remove() }
-    }
-
-    /** 8) Stream “follower count” for a given farm (if you store follower lists) */
-    fun streamFollowerCount(farmId: String): Flow<Int> = callbackFlow {
-        // Example: if you store each user’s “following” array, you can query “whereArrayContains”
-        val subscription = firestore
-            .collection("farms").document(farmId)
-            .collection("followers")
-            .addSnapshotListener { snapshot, error ->
-                if (error != null) {
-                    close(error)
-                    return@addSnapshotListener
-                }
-                trySend(snapshot?.size() ?: 0)
-            }
-        awaitClose { subscription.remove() }
-    }
+//    // 7) Stream follow state for a farm
+//    fun streamUserFollows(farmId: String): Flow<Boolean> = callbackFlow {
+//        val currentUser = FirebaseAuth.getInstance().currentUser?.uid
+//        if (currentUser == null) {
+//            trySend(false)
+//            close()
+//            return@callbackFlow
+//        }
+//        val subscription = firestore
+//            .collection("users")
+//            .document(currentUser)
+//            .collection("following")
+//            .document(farmId)
+//            .addSnapshotListener { snapshot, error ->
+//                if (error != null) {
+//                    close(error)
+//                    return@addSnapshotListener
+//                }
+//                trySend(snapshot?.exists() == true)
+//            }
+//        awaitClose { subscription.remove() }
+//    }
+//
+//    /** 8) Stream “follower count” for a given farm (if you store follower lists) */
+//    fun streamFollowerCount(farmId: String): Flow<Int> = callbackFlow {
+//        // Example: if you store each user’s “following” array, you can query “whereArrayContains”
+//        val subscription = firestore
+//            .collection("farms").document(farmId)
+//            .collection("followers")
+//            .addSnapshotListener { snapshot, error ->
+//                if (error != null) {
+//                    close(error)
+//                    return@addSnapshotListener
+//                }
+//                trySend(snapshot?.size() ?: 0)
+//            }
+//        awaitClose { subscription.remove() }
+//    }
 
     /** 9) Toggle “like” for a post (non‐Composable) */
     suspend fun toggleLike(postId: String): Boolean {

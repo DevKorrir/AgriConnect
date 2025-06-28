@@ -148,44 +148,44 @@ class MarketViewModel @Inject constructor(
         }
     }
 
-//    private fun fetchAllPostsFromFirebase() {
-//        viewModelScope.launch {
-//            _isLoading.value = true
-//
-//            val posts = repository.getAllFarmPosts()
-//            _allPosts.value = posts
-//
-//            // Compute distinct types from 'posts'
-//            // e.g. if posts = [ type="Livestock", type="Crops", type="Livestock" ]
-//            // distinct = ["Crops", "Livestock"]
-//            val typesSet = posts.map { it.type.trim() }
-//                .filter { it.isNotBlank() }
-//                .toSet()
-//
-//            // Sort them alphabetically (or implement your own priority)
-//            val sortedList = typesSet.sorted()
-//
-//            _allTypes.value = sortedList
-//
-//            _isLoading.value = false
-//        }
-//    }
+    private fun fetchAllPostsFromFirebase() {
+        viewModelScope.launch {
+            _isLoading.value = true
+
+            val posts = repository.getAllFarmPosts()
+            _allPosts.value = posts
+
+            // Compute distinct types from 'posts'
+            // e.g. if posts = [ type="Livestock", type="Crops", type="Livestock" ]
+            // distinct = ["Crops", "Livestock"]
+            val typesSet = posts.map { it.type.trim() }
+                .filter { it.isNotBlank() }
+                .toSet()
+
+            // Sort them alphabetically (or implement your own priority)
+            val sortedList = typesSet.sorted()
+
+            _allTypes.value = sortedList
+
+            _isLoading.value = false
+        }
+    }
 
     // 3) Expose flows for “selected post details” (like count, user liked, comment count, bookmark)
     private val _selectedPostId = MutableStateFlow<String?>(null)
     val selectedPostId: StateFlow<String?> = _selectedPostId
 
-    // 3a) Like count for the selected post
-    val selectedLikeCount: StateFlow<Int> = _selectedPostId
-        .filterNotNull()
-        .flatMapLatest { postId -> repository.streamLikeCount(postId) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
-
-    // 3b) Did current user like it?
-    val selectedUserLiked: StateFlow<Boolean> = _selectedPostId
-        .filterNotNull()
-        .flatMapLatest { postId -> repository.streamUserLiked(postId) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+//    // 3a) Like count for the selected post
+//    val selectedLikeCount: StateFlow<Int> = _selectedPostId
+//        .filterNotNull()
+//        .flatMapLatest { postId -> repository.streamLikeCount(postId) }
+//        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+//
+//    // 3b) Did current user like it?
+//    val selectedUserLiked: StateFlow<Boolean> = _selectedPostId
+//        .filterNotNull()
+//        .flatMapLatest { postId -> repository.streamUserLiked(postId) }
+//        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     // 3c) Comment count for the selected post
     val selectedCommentCount: StateFlow<Int> = _selectedPostId
@@ -203,36 +203,36 @@ class MarketViewModel @Inject constructor(
     private val _selectedFarmId = MutableStateFlow<String?>(null)
     val selectedFarmId: StateFlow<String?> = _selectedFarmId
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val selectedFollowerCount: StateFlow<Int> = _selectedFarmId
-        .filterNotNull()
-        .flatMapLatest { farmId -> repository.streamFollowerCount(farmId) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val selectedUserFollows: StateFlow<Boolean> = _selectedFarmId
-        .filterNotNull()
-        .flatMapLatest { farmId -> repository.streamUserFollows(farmId) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+//    @OptIn(ExperimentalCoroutinesApi::class)
+//    val selectedFollowerCount: StateFlow<Int> = _selectedFarmId
+//        .filterNotNull()
+//        .flatMapLatest { farmId -> repository.streamFollowerCount(farmId) }
+//        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+//
+//    @OptIn(ExperimentalCoroutinesApi::class)
+//    val selectedUserFollows: StateFlow<Boolean> = _selectedFarmId
+//        .filterNotNull()
+//        .flatMapLatest { farmId -> repository.streamUserFollows(farmId) }
+//        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     // Exposed to Compose
-    private val _likeCount = MutableStateFlow(0)
-    val likeCount: StateFlow<Int> = _likeCount
-
-    private val _userLiked = MutableStateFlow(false)
-    val userLiked: StateFlow<Boolean> = _userLiked
+//    private val _likeCount = MutableStateFlow(0)
+//    val likeCount: StateFlow<Int> = _likeCount
+//
+//    private val _userLiked = MutableStateFlow(false)
+//    val userLiked: StateFlow<Boolean> = _userLiked
 
     /** Call once per post on composition: wires up real‑time streams */
-    fun observeLikes(postId: String) {
-        viewModelScope.launch {
-            repository.streamLikeCount(postId)
-                .collect { _likeCount.value = it }
-        }
-        viewModelScope.launch {
-            repository.streamUserLiked(postId)
-                .collect { _userLiked.value = it }
-        }
-    }
+//    fun observeLikes(postId: String) {
+//        viewModelScope.launch {
+//            repository.streamLikeCount(postId)
+//                .collect { _likeCount.value = it }
+//        }
+//        viewModelScope.launch {
+//            repository.streamUserLiked(postId)
+//                .collect { _userLiked.value = it }
+//        }
+//    }
 
     // Toggle like with optimistic updates
     fun onToggleLike(postId: String) {
