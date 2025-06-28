@@ -20,8 +20,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.BrokenImage
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.KingBed
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
@@ -30,13 +32,17 @@ import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -49,15 +55,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
+import com.google.firebase.auth.FirebaseAuth
 import dev.korryr.agrimarket.ui.features.farm.data.model.FarmProfile
 import dev.korryr.agrimarket.ui.features.market.viewModel.MarketViewModel
 import dev.korryr.agrimarket.ui.features.posts.dataModel.dataClass.FarmPost
 import java.util.Calendar
-import com.google.firebase.auth.FirebaseAuth
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.remember
 
 @Composable
 fun MarketPostCard(
@@ -69,11 +73,21 @@ fun MarketPostCard(
     onLikeClick: (String) -> Unit,
     onCommentClick: (String) -> Unit,
     onBookmarkClick: (String) -> Unit,
-    marketViewModel: MarketViewModel = hiltViewModel()
+    marketViewModel: MarketViewModel = hiltViewModel(),
 ) {
     // fetch farmer profile in real time
     val profileName = farmProfile?.farmName ?: "Unknown"
     val profileImageUrl = farmProfile?.imageUrl ?: ""
+
+    // Image loading states for post image
+    val postImagePainter = rememberAsyncImagePainter(
+        model = post.imageUrl,
+    )
+
+    // Image loading states for profile image
+    val profileImagePainter = rememberAsyncImagePainter(
+        model = profileImageUrl,
+    )
 
     // 2) Compute “days ago” from post.timestamp (if you stored a Firestore Timestamp)
     //    If your FarmPost has a `timestamp: com.google.firebase.Timestamp` field, do:
@@ -178,34 +192,64 @@ fun MarketPostCard(
                             )
                             .padding(2.dp)
                     ) {
-                        if (profileImageUrl.isNotBlank()) {
-                            Image(
-                                painter = rememberAsyncImagePainter(profileImageUrl),
-                                contentDescription = "Profile",
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .clip(CircleShape)
-                                    .background(MaterialTheme.colorScheme.surface)
-                            )
-                        } else {
-                            // If no profile image URL, show a placeholder circle
+
+                        Image(
+                            painter = profileImagePainter,
+                            contentDescription = "Profile",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.surface)
+                        )
+
+                        // Show loading indicator if the image is in loading state
+                        if (profileImagePainter.state is AsyncImagePainter.State.Loading) {
                             Box(
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .clip(CircleShape)
-                                    .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)),
+                                    .background(MaterialTheme.colorScheme.surface),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Icon(
-                                    imageVector = Icons.Default.PersonAdd,
-                                    contentDescription = "No Profile",
-                                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
-                                    modifier = Modifier.size(24.dp)
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(20.dp),
+                                    strokeWidth = 2.dp,
+                                    color = MaterialTheme.colorScheme.primary
                                 )
                             }
                         }
                     }
+
+
+//                        if (profileImageUrl.isNotBlank()) {
+//               Image(
+//                                painter = rememberAsyncImagePainter(profileImageUrl),
+//                                contentDescription = "Profile",
+//                                contentScale = ContentScale.Crop,
+//                                modifier = Modifier
+//                                    .fillMaxSize()
+//                                    .clip(CircleShape)
+//                                    .background(MaterialTheme.colorScheme.surface)
+//                            )
+//                        } else {
+//                            // If no profile image URL, show a placeholder circle
+//                            Box(
+//                                modifier = Modifier
+//                                    .fillMaxSize()
+//                                    .clip(CircleShape)
+//                                    .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)),
+//                                contentAlignment = Alignment.Center
+//                            ) {
+//                                Icon(
+//                                    imageVector = Icons.Default.PersonAdd,
+//                                    contentDescription = "No Profile",
+//                                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f),
+//                                    modifier = Modifier.size(24.dp)
+//                                )
+//                            }
+//                        }
+//                    }
 
                     Column {
                         Text(
@@ -234,11 +278,37 @@ fun MarketPostCard(
                         Spacer(modifier = Modifier.width(16.dp))
 
                         // Option B: show a disabled “Owner” badge instead
-                        Text(
-                            text = "Owner",
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium),
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                        )
+                        Card(
+                            shape = RoundedCornerShape(20.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+                            ),
+                            border = BorderStroke(
+                                1.dp,
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+                            )
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.KingBed,
+                                    contentDescription = "Owner",
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Text(
+                                    text = "Owner",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = FontWeight.SemiBold,
+                                        fontSize = 11.sp
+                                    ),
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
                     } else {
                         // Follow Button / unfollow
                         OutlinedButton(
@@ -290,15 +360,40 @@ fun MarketPostCard(
                     .height(280.dp)
                     .clickable { onPostClick() }
             ) {
+
                 if (post.imageUrl.isNotBlank()) {
                     Image(
-                        painter = rememberAsyncImagePainter(post.imageUrl),
+                        painter = postImagePainter,
                         contentDescription = "Product Image",
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
                             .fillMaxSize()
                             .clip(RoundedCornerShape(12.dp))
                     )
+
+                    if (postImagePainter.state is AsyncImagePainter.State.Loading) {
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(
+                                    brush = Brush.verticalGradient(
+                                        colors = listOf(
+                                            MaterialTheme.colorScheme.primary.copy(alpha = 0.05f),
+                                            MaterialTheme.colorScheme.tertiary.copy(alpha = 0.05f)
+                                        )
+                                    )
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+
+                            CircularProgressIndicator(
+                                modifier = Modifier.align(Alignment.Center),
+                                color = MaterialTheme.colorScheme.primary,
+                                strokeWidth = 4.dp
+                            )
+                        }
+                    }
                 } else {
                     // Placeholder when there’s no image URL
                     Box(
@@ -307,8 +402,8 @@ fun MarketPostCard(
                             .background(
                                 brush = Brush.verticalGradient(
                                     colors = listOf(
-                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                                        MaterialTheme.colorScheme.tertiary.copy(alpha = 0.1f)
+                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.05f),
+                                        MaterialTheme.colorScheme.tertiary.copy(alpha = 0.05f)
                                     )
                                 )
                             ),
@@ -319,10 +414,10 @@ fun MarketPostCard(
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Default.AddAPhoto,
+                                imageVector = Icons.Default.BrokenImage,
                                 contentDescription = "No image",
                                 tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                                modifier = Modifier.size(48.dp)
+                                modifier = Modifier.size(80.dp)
                             )
                             Text(
                                 "No Image Available",
