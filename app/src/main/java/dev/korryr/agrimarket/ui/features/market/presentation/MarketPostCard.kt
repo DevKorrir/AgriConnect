@@ -1,5 +1,6 @@
 package dev.korryr.agrimarket.ui.features.market.presentation
 
+import android.content.Intent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -50,6 +51,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -73,6 +75,7 @@ fun MarketPostCard(
     onLikeClick: (String) -> Unit,
     onCommentClick: (String) -> Unit,
     onBookmarkClick: (String) -> Unit,
+    onShareClick: (String) -> Unit,
     marketViewModel: MarketViewModel = hiltViewModel(),
 ) {
     // fetch farmer profile in real time
@@ -267,38 +270,38 @@ fun MarketPostCard(
                         // Option A: show nothing
                         Spacer(modifier = Modifier.width(16.dp))
 
-                        // Option B: show a disabled “Owner” badge instead
-                        Card(
-                            shape = RoundedCornerShape(20.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
-                            ),
-                            border = BorderStroke(
-                                1.dp,
-                                MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
-                            )
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(4.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.KingBed,
-                                    contentDescription = "Owner",
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(14.dp)
-                                )
-                                Text(
-                                    text = "Owner",
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        fontWeight = FontWeight.SemiBold,
-                                        fontSize = 11.sp
-                                    ),
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                            }
-                        }
+//                        // Option B: show a disabled “Owner” badge instead
+//                        Card(
+//                            shape = RoundedCornerShape(20.dp),
+//                            colors = CardDefaults.cardColors(
+//                                containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+//                            ),
+//                            border = BorderStroke(
+//                                1.dp,
+//                                MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+//                            )
+//                        ) {
+//                            Row(
+//                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+//                                verticalAlignment = Alignment.CenterVertically,
+//                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+//                            ) {
+//                                Icon(
+//                                    imageVector = Icons.Default.KingBed,
+//                                    contentDescription = "Owner",
+//                                    tint = MaterialTheme.colorScheme.primary,
+//                                    modifier = Modifier.size(14.dp)
+//                                )
+//                                Text(
+//                                    text = "Owner",
+//                                    style = MaterialTheme.typography.labelSmall.copy(
+//                                        fontWeight = FontWeight.SemiBold,
+//                                        fontSize = 11.sp
+//                                    ),
+//                                    color = MaterialTheme.colorScheme.primary
+//                                )
+//                            }
+//                        }
                     } else {
                         // Follow Button / unfollow
                         OutlinedButton(
@@ -505,6 +508,7 @@ fun MarketPostCard(
                         )
                     }
 
+                    val context = LocalContext.current
                     // Share Button
                     Icon(
                         imageVector = Icons.Outlined.Share,
@@ -513,7 +517,9 @@ fun MarketPostCard(
                         modifier = Modifier
                             .clip(CircleShape)
                             .size(24.dp)
-                            .clickable { /* Handle share */ }
+                            .clickable {
+                                onShareClick(post.postId)
+                            }
                             .padding(2.dp)
                     )
                 }
