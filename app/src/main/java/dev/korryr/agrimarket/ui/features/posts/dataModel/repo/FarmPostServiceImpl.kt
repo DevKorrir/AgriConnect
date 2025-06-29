@@ -1,25 +1,17 @@
 package dev.korryr.agrimarket.ui.features.posts.dataModel.repo
 
+//import com.google.firebase.firestore.ktx.toObjects
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.toObjects
+import com.google.firebase.firestore.Query
 import dev.korryr.agrimarket.ui.features.posts.dataModel.dataClass.FarmPost
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
-//import com.google.firebase.firestore.ktx.toObjects
-import com.google.firebase.firestore.toObjects
-import com.google.firebase.storage.FirebaseStorage
-import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.tasks.await
-import java.util.UUID
 import javax.inject.Singleton
-import androidx.core.net.toUri
-import com.google.firebase.firestore.Query
 
-@Singleton
+@Singleton // check it was just adding
 class FarmPostServiceImpl @Inject constructor(
     private val firestore: FirebaseFirestore
 ) : FarmPostService {
