@@ -1,21 +1,23 @@
 package dev.korryr.agrimarket.di
 
+//import jakarta.inject.Singleton
 import android.content.Context
-import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
-import com.google.firebase.storage.storage
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import dev.korryr.agrimarket.netObserver.ConnectivityObserver
+import dev.korryr.agrimarket.netObserver.NetworkConnectivityObserver
 import dev.korryr.agrimarket.ui.features.auth.data.remote.AuthService
 import dev.korryr.agrimarket.ui.features.auth.data.remote.FirebaseAuthService
 import dev.korryr.agrimarket.ui.features.auth.data.rrepo.AuthRepository
 import dev.korryr.agrimarket.ui.features.auth.preferences.AuthPreferencesRepository
-//import jakarta.inject.Singleton
+import dev.korryr.agrimarket.ui.features.postManagement.model.FarmPostServiceImpl
+import dev.korryr.agrimarket.ui.features.postManagement.model.FarmPostsService
 import javax.inject.Singleton
 
 
@@ -63,6 +65,27 @@ object AppModule {
     fun provideFirebaseStorage(): FirebaseStorage {
         return FirebaseStorage.getInstance()
     }
+
+    @Provides
+    @Singleton
+    fun provideContext(@ApplicationContext context: Context): Context {
+        return context
+    }
+
+    @Provides
+    @Singleton
+    fun provideFarmPostsService(
+        firestore: FirebaseFirestore,
+        storage: FirebaseStorage,
+        auth: FirebaseAuth
+    ): FarmPostsService {
+        return FarmPostServiceImpl(firestore, storage)
+    }
+
+    @Provides
+    @Singleton
+    fun provideConnectivityObserver(@ApplicationContext ctx: Context): ConnectivityObserver =
+        NetworkConnectivityObserver(ctx)
 
 
 

@@ -45,7 +45,8 @@ enum class FarmScreenMode {
 fun FarmProfileScreen(
     farmViewModel: FarmProfileViewModel = hiltViewModel(),
     onBackPressed: () -> Unit = {},
-    onNavigateToPostScreen: () -> Unit = {}
+    onNavigateToPostScreen: () -> Unit = {},
+    onManagePosts: () -> Unit = {}
 ) {
     val uiState by farmViewModel.uiState.collectAsState()
     val isSaved by farmViewModel.isSaved.collectAsState()
@@ -144,7 +145,8 @@ fun FarmProfileScreen(
                         FarmDashboardContent(
                             profile = (uiState as FarmProfileUiState.Success).profile!!,
                             modifier = Modifier.fillMaxSize(),
-                            onEdit = { isEditMode = true }
+                            onEdit = { isEditMode = true },
+                            onViewAllPosts = onManagePosts
                         )
                     } else {
                         CreateEditFarmContent(

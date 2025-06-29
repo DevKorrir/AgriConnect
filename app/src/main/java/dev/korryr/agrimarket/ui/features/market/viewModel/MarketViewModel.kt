@@ -3,6 +3,8 @@ package dev.korryr.agrimarket.ui.features.market.viewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.korryr.agrimarket.netObserver.ConnectivityObserver
+import dev.korryr.agrimarket.netObserver.NetworkStatus
 import dev.korryr.agrimarket.ui.features.farm.data.model.FarmProfile
 import dev.korryr.agrimarket.ui.features.market.dataModel.repo.MarketRepository
 import dev.korryr.agrimarket.ui.features.posts.dataModel.dataClass.FarmPost
@@ -15,8 +17,19 @@ import javax.inject.Inject
 @HiltViewModel
 class MarketViewModel @Inject constructor(
     private val repository: MarketRepository,
-    private val auth: com.google.firebase.auth.FirebaseAuth
+    private val auth: com.google.firebase.auth.FirebaseAuth,
+    private val connectivityObserver: ConnectivityObserver,
 ) : ViewModel() {
+
+    // Expose the network status as a state flow
+    val networkStatus: StateFlow<NetworkStatus> =
+        connectivityObserver.observe()
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5_000),
+                initialValue = NetworkStatus.Unavailable
+            )
+
 
     // 1) All farm posts as before
     private val _allPosts = MutableStateFlow<List<FarmPost>>(emptyList())

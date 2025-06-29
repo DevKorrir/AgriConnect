@@ -37,6 +37,7 @@ import dev.korryr.agrimarket.ui.features.farm.presentation.StatisticItem
 import dev.korryr.agrimarket.ui.features.market.viewModel.MarketViewModel
 import dev.korryr.agrimarket.ui.features.posts.dataModel.dataClass.FarmPost
 import dev.korryr.agrimarket.ui.features.posts.viewModel.FarmPostViewModel
+import dev.korryr.agrimarket.ui.navigation.Screen
 import dev.korryr.agrimarket.ui.theme.SecondaryTextLight
 
 /**
@@ -273,7 +274,9 @@ fun FarmDashboardContent(
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
                     )
-                    TextButton(onClick = { /* TODO: Navigate to all posts */ }) {
+                    TextButton(
+                        onClick = onViewAllPosts
+                    ) {
                         Text("View All")
                     }
                 }
