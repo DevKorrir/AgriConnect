@@ -67,7 +67,6 @@ import dev.korryr.agrimarket.ui.shareUI.AgribuzTextField
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditPostDialog(
-    modifier: Modifier = Modifier,
     post: FarmPost,
     onDismiss: () -> Unit,
     onSave: (FarmPost) -> Unit,
@@ -106,7 +105,17 @@ fun EditPostDialog(
         }
     }
 
-    val units = listOf("kg", "tonnes", "pieces", "bags", "boxes", "bundles")
+
+    val allUnits = listOf("kg", "tonnes", "pieces", "bags", "boxes", "bundles")
+    var expandedUnit by remember { mutableStateOf(false) }
+
+
+    // Filter suggestions based on current input
+    val filteredUnits = remember(unit) {
+        if (unit.isBlank()) allUnits
+        else allUnits.filter { it.startsWith(unit, ignoreCase = true) }
+    }
+
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -249,7 +258,6 @@ fun EditPostDialog(
                 }
 
                 // Description Field
-
                 AgribuzTextField(
                     value = description,
                     onValueChange = {
@@ -289,8 +297,12 @@ fun EditPostDialog(
                             focusedBorderColor = MaterialTheme.colorScheme.primary,
                             focusedLabelColor = MaterialTheme.colorScheme.primary,
                             // Container colors
-                            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
+                            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(
+                                alpha = 0.3f
+                            ),
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(
+                                alpha = 0.2f
+                            ),
                         ),
                         shape = RoundedCornerShape(12.dp),
                     )
@@ -304,8 +316,12 @@ fun EditPostDialog(
                             focusedBorderColor = MaterialTheme.colorScheme.primary,
                             focusedLabelColor = MaterialTheme.colorScheme.primary,
                             // Container colors
-                            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
+                            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(
+                                alpha = 0.3f
+                            ),
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(
+                                alpha = 0.2f
+                            ),
                         ),
                         shape = RoundedCornerShape(12.dp),
                         keyboardOptions = KeyboardOptions(
@@ -320,7 +336,7 @@ fun EditPostDialog(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    var expandedUnit by remember { mutableStateOf(false) }
+                    // var expandedUnit by remember { mutableStateOf(false) }
 
                     ExposedDropdownMenuBox(
                         expanded = expandedUnit,
@@ -329,8 +345,11 @@ fun EditPostDialog(
                     ) {
                         OutlinedTextField(
                             value = unit,
-                            onValueChange = { },
-                            readOnly = true,
+                            onValueChange = {
+                                unit = it
+                                expandedUnit = true
+                            },
+                            readOnly = false,
                             label = { Text("Unit") },
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedUnit) },
                             modifier = Modifier
@@ -340,8 +359,12 @@ fun EditPostDialog(
                                 focusedBorderColor = MaterialTheme.colorScheme.primary,
                                 focusedLabelColor = MaterialTheme.colorScheme.primary,
                                 // Container colors
-                                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-                                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
+                                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(
+                                    alpha = 0.3f
+                                ),
+                                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(
+                                    alpha = 0.2f
+                                ),
                             ),
                             shape = RoundedCornerShape(12.dp),
                             keyboardOptions = KeyboardOptions(
@@ -354,7 +377,7 @@ fun EditPostDialog(
                             expanded = expandedUnit,
                             onDismissRequest = { expandedUnit = false }
                         ) {
-                            units.forEach { unitOption ->
+                            filteredUnits.forEach { unitOption ->
                                 DropdownMenuItem(
                                     text = { Text(unitOption) },
                                     onClick = {
@@ -375,8 +398,12 @@ fun EditPostDialog(
                             focusedBorderColor = MaterialTheme.colorScheme.primary,
                             focusedLabelColor = MaterialTheme.colorScheme.primary,
                             // Container colors
-                            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
+                            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(
+                                alpha = 0.3f
+                            ),
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(
+                                alpha = 0.2f
+                            ),
                         ),
                         shape = RoundedCornerShape(12.dp),
                         keyboardOptions = KeyboardOptions(
