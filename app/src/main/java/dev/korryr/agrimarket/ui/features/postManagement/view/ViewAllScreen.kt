@@ -40,8 +40,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
 import com.google.firebase.auth.FirebaseAuth
+import dev.korryr.agrimarket.ui.features.postManagement.presentation.EmptyPostsView
 import dev.korryr.agrimarket.ui.features.posts.dataModel.dataClass.FarmPost
 import javax.annotation.meta.When
+import dev.korryr.agrimarket.ui.features.postManagement.presentation.PostManagerCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -86,8 +88,59 @@ fun ManagePostScreen(
         ) {
             when {
                 isLoading -> {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(48.dp),
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                text = "Loading your posts...",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                            )
+                        }
+                    }
                 }
+
+                posts.isEmpty() -> {
+                    EmptyPostsView()
+                }
+
+                else -> {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(posts) { post ->
+                            PostManagerCard(
+                                post = post,
+
+                                onEditClick = {
+                                    selectedPost = post
+                                    //showEditDialog = true
+                                },
+                                onDelete = {
+
+                                },
+                            )
+                        }
+
+                        // bottomBadding
+                        item {
+                            Spacer(modifier = Modifier.height(80.dp))
+                        }
+                    }
+                }
+
+
 
             }
         }
