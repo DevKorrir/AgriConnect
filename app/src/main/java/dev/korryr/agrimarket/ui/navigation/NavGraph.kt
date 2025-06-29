@@ -67,7 +67,7 @@ fun NavGraph(
 
     //declare route
     val startRoute = when {
-        isLoggedIn -> Screen.ViewAll.route
+        isLoggedIn -> Screen.Home.route
         else -> Screen.Welcome.route
     }
 

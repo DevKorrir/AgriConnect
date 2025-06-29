@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import dev.korryr.agrimarket.netObserver.NetworkStatus
 import dev.korryr.agrimarket.ui.features.market.presentation.MarketPostCard
 import dev.korryr.agrimarket.ui.features.market.viewModel.MarketViewModel
 import dev.korryr.agrimarket.ui.features.posts.dataModel.dataClass.FarmPost
@@ -85,6 +86,16 @@ fun MarketScreen(
     // b) Observe all farm profiles as a Map<farmId, FarmProfile>
     val farmProfiles by marketViewModel.allFarmProfiles.collectAsState()
 
+    val networkStatus by marketViewModel.networkStatus.collectAsState()
+
+    // This controls your banner visibility/text
+    val bannerText = when (networkStatus) {
+        NetworkStatus.Available -> null
+        NetworkStatus.Losing -> "Network is unstable…"
+        NetworkStatus.Lost, NetworkStatus.Unavailable -> "You are offline"
+        else -> "lost"
+    }
+
     LaunchedEffect(Unit) {
         visible = true
     }
@@ -99,6 +110,24 @@ fun MarketScreen(
             )
         )
     ) {
+
+        // Show banner (you can also use AnimatedVisibility)
+        bannerText?.let { message ->
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.errorContainer)
+                    .padding(8.dp)
+            ) {
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        color = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                )
+            }
+        }
+
 
         Column(
             modifier = Modifier

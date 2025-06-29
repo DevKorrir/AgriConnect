@@ -10,6 +10,8 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import dev.korryr.agrimarket.netObserver.ConnectivityObserver
+import dev.korryr.agrimarket.netObserver.NetworkConnectivityObserver
 import dev.korryr.agrimarket.ui.features.auth.data.remote.AuthService
 import dev.korryr.agrimarket.ui.features.auth.data.remote.FirebaseAuthService
 import dev.korryr.agrimarket.ui.features.auth.data.rrepo.AuthRepository
@@ -79,6 +81,11 @@ object AppModule {
     ): FarmPostsService {
         return FarmPostServiceImpl(firestore, storage)
     }
+
+    @Provides
+    @Singleton
+    fun provideConnectivityObserver(@ApplicationContext ctx: Context): ConnectivityObserver =
+        NetworkConnectivityObserver(ctx)
 
 
 
