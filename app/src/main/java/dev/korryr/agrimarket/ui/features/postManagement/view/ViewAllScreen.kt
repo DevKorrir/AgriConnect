@@ -62,6 +62,34 @@ fun ManagePostScreen(
     val updateSuccess by managePostViewModel.updateSuccess.collectAsState()
     val deleteSuccess by managePostViewModel.deleteSuccess.collectAsState()
 
+    // Load posts when screen appears
+    LaunchedEffect(currentUid) {
+        if (currentUid.isNotBlank()) {
+            managePostViewModel.loadPosts(currentUid)
+        }
+    }
+
+    // Handle success messages
+    LaunchedEffect(updateSuccess) {
+        if (updateSuccess) {
+            managePostViewModel.clearMessages()
+        }
+    }
+
+    LaunchedEffect(deleteSuccess) {
+        if (deleteSuccess) {
+            managePostViewModel.clearMessages()
+        }
+    }
+
+    // Show error snackbar
+    error?.let { errorMessage ->
+        LaunchedEffect(errorMessage) {
+            // You can show a snackbar here if needed
+            managePostViewModel.clearMessages()
+        }
+    }
+
 
 
     Scaffold(

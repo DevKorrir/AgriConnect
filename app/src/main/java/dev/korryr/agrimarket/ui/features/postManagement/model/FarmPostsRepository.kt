@@ -9,7 +9,7 @@ interface FarmPostsService {
     /**
      * Get all posts for a specific farmer
      */
-    fun getAllPostsForFarmer(farmerId: String): Flow<List<FarmPost>>
+    fun getAllPostsForFarmer(farmId: String): Flow<List<FarmPost>>
     
     /**
      * Update an existing farm post

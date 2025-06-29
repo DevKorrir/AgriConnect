@@ -2,8 +2,8 @@ package dev.korryr.agrimarket.ui.features.postManagement.model
 
 import android.net.Uri
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ktx.toObjects
-//import com.google.firebase.firestore.toObjects
+//import com.google.firebase.firestore.ktx.toObjects
+import com.google.firebase.firestore.toObjects
 import com.google.firebase.storage.FirebaseStorage
 import dev.korryr.agrimarket.ui.features.posts.dataModel.dataClass.FarmPost
 import kotlinx.coroutines.channels.awaitClose
@@ -23,11 +23,11 @@ class FarmPostServiceImpl @Inject constructor(
 ) : FarmPostsService {
 
     private val postsCollection = firestore.collection("farm_posts")
-    private val storageRef = storage.reference.child("post_images")
+    private val storageRef = storage.reference.child("posts_images")
 
-    override fun getAllPostsForFarmer(farmerId: String): Flow<List<FarmPost>> = callbackFlow {
+    override fun getAllPostsForFarmer(farmId: String): Flow<List<FarmPost>> = callbackFlow {
         val listener = postsCollection
-            .whereEqualTo("farmId", farmerId)
+            .whereEqualTo("farmId", farmId)
             .orderBy("timestamp")
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
