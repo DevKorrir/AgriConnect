@@ -35,6 +35,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.firebase.auth.FirebaseAuth
+import dev.korryr.agrimarket.ui.features.postManagement.presentation.DeleteConfirmationDialog
 import dev.korryr.agrimarket.ui.features.postManagement.presentation.EditPostDialog
 import dev.korryr.agrimarket.ui.features.postManagement.presentation.EmptyPostsView
 import dev.korryr.agrimarket.ui.features.postManagement.presentation.PostManagerCard
@@ -190,8 +191,20 @@ fun ManagePostScreen(
         )
     }
 
-    // Delete Confirmdialog
 
-    //
-
+    // Delete Confirmation Dialog
+    if (showDeleteDialog && selectedPost != null) {
+        DeleteConfirmationDialog(
+            postTitle = selectedPost!!.description,
+            onConfirm = {
+                managePostViewModel.deletePost(selectedPost!!.postId)
+                showDeleteDialog = false
+                selectedPost = null
+            },
+            onDismiss = {
+                showDeleteDialog = false
+                selectedPost = null
+            }
+        )
+    }
 }
