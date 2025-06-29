@@ -15,6 +15,8 @@ import dev.korryr.agrimarket.ui.features.auth.data.remote.AuthService
 import dev.korryr.agrimarket.ui.features.auth.data.remote.FirebaseAuthService
 import dev.korryr.agrimarket.ui.features.auth.data.rrepo.AuthRepository
 import dev.korryr.agrimarket.ui.features.auth.preferences.AuthPreferencesRepository
+import dev.korryr.agrimarket.ui.features.postManagement.model.FarmPostServiceImpl
+import dev.korryr.agrimarket.ui.features.postManagement.model.FarmPostsService
 //import jakarta.inject.Singleton
 import javax.inject.Singleton
 
@@ -62,6 +64,22 @@ object AppModule {
     @Singleton
     fun provideFirebaseStorage(): FirebaseStorage {
         return FirebaseStorage.getInstance()
+    }
+
+    @Provides
+    @Singleton
+    fun provideContext(@ApplicationContext context: Context): Context {
+        return context
+    }
+
+    @Provides
+    @Singleton
+    fun provideFarmPostsService(
+        firestore: FirebaseFirestore,
+        storage: FirebaseStorage,
+        auth: FirebaseAuth
+    ): FarmPostsService {
+        return FarmPostServiceImpl(firestore, storage)
     }
 
 
