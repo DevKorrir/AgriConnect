@@ -275,7 +275,7 @@ fun FarmDashboardContent(
                         fontWeight = FontWeight.Bold
                     )
                     TextButton(
-                        onClick = { Screen.ViewAll.route }
+                        onClick = onViewAllPosts
                     ) {
                         Text("View All")
                     }

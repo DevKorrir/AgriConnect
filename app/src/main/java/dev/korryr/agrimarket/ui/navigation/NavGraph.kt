@@ -291,6 +291,9 @@ fun NavGraph(
                     },
                     onNavigateToPostScreen = {
                         navController.navigate(Screen.Post.route)
+                    },
+                    onManagePosts = {
+                        navController.navigate(Screen.ViewAll.route)
                     }
                 )
 
