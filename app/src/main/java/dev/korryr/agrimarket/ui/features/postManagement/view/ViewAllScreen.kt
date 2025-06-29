@@ -124,10 +124,10 @@ fun ManagePostScreen(
                                 post = post,
 
                                 onEditClick = {
-                                    selectedPost = post
+                                    //selectedPost = post
                                     //showEditDialog = true
                                 },
-                                onDelete = {
+                                onDeleteClick = {
 
                                 },
                             )
