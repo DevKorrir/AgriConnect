@@ -1,11 +1,10 @@
 package dev.korryr.agrimarket.di
 
+//import jakarta.inject.Singleton
 import android.content.Context
-import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
-import com.google.firebase.storage.storage
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -17,7 +16,6 @@ import dev.korryr.agrimarket.ui.features.auth.data.rrepo.AuthRepository
 import dev.korryr.agrimarket.ui.features.auth.preferences.AuthPreferencesRepository
 import dev.korryr.agrimarket.ui.features.postManagement.model.FarmPostServiceImpl
 import dev.korryr.agrimarket.ui.features.postManagement.model.FarmPostsService
-//import jakarta.inject.Singleton
 import javax.inject.Singleton
 
 

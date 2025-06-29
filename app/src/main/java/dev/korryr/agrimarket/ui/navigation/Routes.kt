@@ -16,5 +16,9 @@ sealed class Screen(
     object Post : Screen("post")
     object Settings : Screen("settings")
     object Appearance : Screen("appearance")
+    object Messages : Screen("messages")
+    object Orders : Screen("orders")
+
+    object ViewAll : Screen("viewAll")
 
 }

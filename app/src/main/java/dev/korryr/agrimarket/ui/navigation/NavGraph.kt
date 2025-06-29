@@ -45,6 +45,7 @@ import dev.korryr.agrimarket.ui.features.settings.view.SettingsScreen
 import dev.korryr.agrimarket.ui.features.settings.view.apperances.view.AppearanceScreen
 import dev.korryr.agrimarket.ui.features.welcome.AgribuzWelcomeScreen
 import dev.korryr.agrimarket.ui.theme.ThemeViewModel
+import dev.korryr.agrimarket.ui.features.postManagement.view.ManagePostScreen
 
 @Composable
 fun NavGraph(
@@ -320,6 +321,17 @@ fun NavGraph(
                     themeManager = themeManager
                 )
             }
+
+            composable(Screen.ViewAll.route) {
+                ManagePostScreen(
+                    onBack = {
+                        navController.navigateUp()
+                    }
+                )
+            }
+
+
+
 
 
 
