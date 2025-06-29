@@ -146,7 +146,9 @@ class FarmPostViewModel @Inject constructor(
     fun loadRecentPosts(farmId: String) {
         viewModelScope.launch {
             try {
-                _recentPosts.value = repository.getRecentPosts(farmId)
+                repository.getRecentPosts(farmId).collect { posts ->
+                    _recentPosts.value = posts
+                }
             } catch (e: Exception) {
                 _error.value = e.localizedMessage
             }
