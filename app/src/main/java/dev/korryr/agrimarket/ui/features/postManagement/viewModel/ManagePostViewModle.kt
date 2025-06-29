@@ -92,7 +92,7 @@ class ManagePostViewModel @Inject constructor(
 
     }
 
-    fun uploadImage(imageUri: String, onResult: (Result<String>) -> Unit)  {
+    fun uploadNewImage(imageUri: String, onResult: (Result<String>) -> Unit)  {
         viewModelScope.launch {
             _isLoading.value = true
             _error.value = null
