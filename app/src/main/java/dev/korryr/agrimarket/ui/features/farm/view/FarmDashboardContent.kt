@@ -73,6 +73,7 @@ fun FarmDashboardContent(
     }
 
     // 3) Collect recentPosts state
+    val allPostCount by farmPostViewModel.allPosts.collectAsState()
     val recentPosts by farmPostViewModel.recentPosts.collectAsState()
     val followCount by marketViewModel.followersCount.collectAsState()
     val followingCount by marketViewModel.followingCount.collectAsState()
@@ -82,7 +83,12 @@ fun FarmDashboardContent(
     val errorMsg by farmPostViewModel.error.collectAsState()
 
     // 5) Calculate number of posts
-    val postsCount = recentPosts.size
+    val postsCount = allPostCount.size
+
+//    // 2. Trigger initial load if needed
+//    LaunchedEffect(Unit) {
+//        farmPostViewModel.auth.currentUser?.uid?.let { farmPostViewModel.loadAllPosts(it) }
+//    }
 
     Column(
         modifier = modifier

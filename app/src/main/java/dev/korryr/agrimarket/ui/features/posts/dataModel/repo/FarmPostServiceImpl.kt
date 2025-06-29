@@ -7,6 +7,7 @@ import dev.korryr.agrimarket.ui.features.posts.dataModel.dataClass.FarmPost
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -65,6 +66,37 @@ class FarmPostServiceImpl @Inject constructor(
 
         awaitClose { listener.remove() }
     }
+
+    override suspend fun getAllPostsForFarmer(farmId: String): Flow<List<FarmPost>> = callbackFlow {
+        // Build the query: all posts for this farm, ordered newest→oldest
+        val query = postsCollection
+            .whereEqualTo("farmId", farmId)
+            .orderBy("timestamp", Query.Direction.DESCENDING)
+
+        // Attach a snapshot listener
+        val listenerRegistration = query.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                // Terminate the flow with the error
+                close(error)
+            } else {
+                // Convert every document to FarmPost (including its ID)
+                val postsList = snapshot
+                    ?.documents
+                    ?.mapNotNull { doc ->
+                        doc.toObject(FarmPost::class.java)
+                            ?.copy(postId = doc.id)
+                    }
+                    ?: emptyList()
+
+                // Emit the full list
+                trySend(postsList).isSuccess
+            }
+        }
+
+        // Clean up when nobody is collecting
+        awaitClose { listenerRegistration.remove() }
+    }
+
 
 
 }
