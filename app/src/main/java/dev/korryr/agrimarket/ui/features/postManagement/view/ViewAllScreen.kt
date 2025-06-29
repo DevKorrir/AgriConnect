@@ -44,6 +44,7 @@ import dev.korryr.agrimarket.ui.features.postManagement.presentation.EmptyPostsV
 import dev.korryr.agrimarket.ui.features.posts.dataModel.dataClass.FarmPost
 import javax.annotation.meta.When
 import dev.korryr.agrimarket.ui.features.postManagement.presentation.PostManagerCard
+import dev.korryr.agrimarket.ui.features.postManagement.presentation.EditPostDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -61,6 +62,11 @@ fun ManagePostScreen(
     val isUpdating by managePostViewModel.isUpdating.collectAsState()
     val updateSuccess by managePostViewModel.updateSuccess.collectAsState()
     val deleteSuccess by managePostViewModel.deleteSuccess.collectAsState()
+
+    //dialog states
+    var showEditDialog by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var selectedPost by remember { mutableStateOf<FarmPost?>(null) }
 
     // Load posts when screen appears
     LaunchedEffect(currentUid) {
@@ -107,7 +113,7 @@ fun ManagePostScreen(
                 )
             )
         }
-    ){ contentPadding ->
+    ) { contentPadding ->
 
         Box(
             modifier = Modifier
@@ -167,11 +173,29 @@ fun ManagePostScreen(
                         }
                     }
                 }
-
-
-
             }
         }
     }
+
+    //edit dialog
+    if (showEditDialog && showDeleteDialog != null) {
+        EditPostDialog(
+            post = selectedPost!!,
+            onDismiss = {
+                showEditDialog = false
+                selectedPost = null
+            },
+            onSave = { updatedPost ->
+                managePostViewModel.updatePost(updatedPost)
+                showEditDialog = false
+                selectedPost = null
+            },
+
+        )
+    }
+
+    // Delete Confirmdialog
+
+    //
 
 }
