@@ -109,12 +109,10 @@ fun MarketPostCard(
         } ?: "Unknown"// fallback if post.timestamp is null
     } ?: "" // fall back if profile ids null
 
-    //val likeCount by marketViewModel.selectedLikeCount.collectAsState()
-    //val userLiked by marketViewModel.selectedUserLiked.collectAsState()
     val commentCount by marketViewModel.selectedCommentCount.collectAsState()
     val bookmarked by marketViewModel.selectedBookmarked.collectAsState()
-    //val isFollowing by marketViewModel.selectedUserFollows.collectAsState()
-    val isFollowing by marketViewModel.isFollowing.collectAsState()
+    val farmFollowStates by marketViewModel.farmFollowStates.collectAsState()
+    val isFollowing = farmFollowStates[post.farmId] ?: false // this is because farm followstate in the view model uses map string boolean
 
     //get current user id
     val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
@@ -140,7 +138,7 @@ fun MarketPostCard(
     val isBookmarked = likeState.isBookmarked
 
     LaunchedEffect(post.farmId) {
-        marketViewModel.refreshFollowState(post.farmId)
+        marketViewModel.observeFarmFollow(post.farmId)
     }
 
     Card(

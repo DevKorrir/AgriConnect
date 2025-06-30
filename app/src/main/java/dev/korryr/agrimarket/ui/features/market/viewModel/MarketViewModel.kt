@@ -73,6 +73,10 @@ class MarketViewModel @Inject constructor(
     private val _followingCount = MutableStateFlow(0)
     val followingCount: StateFlow<Int> = _followingCount.asStateFlow()
 
+    // Farm follow states
+    private val _farmFollowStates = MutableStateFlow<Map<String, Boolean>>(emptyMap())
+    val farmFollowStates: StateFlow<Map<String, Boolean>> = _farmFollowStates.asStateFlow()
+
     init {
         initializeData()
     }
@@ -275,31 +279,99 @@ class MarketViewModel @Inject constructor(
         }
     }
 
-    fun onToggleBookmark(postId: String) = repository.toggleBookMark(postId)
-
-    // follow/ following
-    private val _isFollowing = MutableStateFlow(false)
-    val isFollowing: StateFlow<Boolean> = _isFollowing.asStateFlow()
-
-    /**
-     * Call this when you first display a post, to load the button state.
-     */
-    fun refreshFollowState(farmId: String) {
+    fun onToggleBookmark(postId: String) {
         viewModelScope.launch {
-            _isFollowing.value = repository.isFollowing(farmId)
+            val currentState = _postLikeStates.value[postId] ?: PostLikeState()
+
+            // Optimistic update
+            val optimisticState = currentState.copy(
+                isBookmarked = !currentState.isBookmarked
+            )
+
+            _postLikeStates.value = _postLikeStates.value.toMutableMap().apply {
+                put(postId, optimisticState)
+            }
+
+            try {
+                repository.toggleBookMark(postId)
+            } catch (e: Exception) {
+                // Revert on error
+                _postLikeStates.value = _postLikeStates.value.toMutableMap().apply {
+                    put(postId, currentState)
+                }
+            }
         }
     }
 
-    /**
-     * Called from your composable when the user taps Follow/Unfollow.
-     */
+    // Farm follow functionality
+    fun observeFarmFollow(farmId: String) {
+        if (_farmFollowStates.value.containsKey(farmId)) {
+            return // Already observing
+        }
+
+        viewModelScope.launch {
+            repository.streamUserFollows(farmId)
+                .collect { isFollowing ->
+                    _farmFollowStates.value = _farmFollowStates.value.toMutableMap().apply {
+                        put(farmId, isFollowing)
+                    }
+                }
+        }
+    }
+
+    fun getFarmFollowState(farmId: String): StateFlow<Boolean> {
+        return _farmFollowStates.map { states ->
+            states[farmId] ?: false
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = false
+        )
+    }
+
     fun onToggleFollow(farmId: String) {
         viewModelScope.launch {
-            // This suspend call will flip Firestore and return the new state.
-            val newState = repository.toggleFollow(farmId)
-            _isFollowing.value = newState
+            val currentState = _farmFollowStates.value[farmId] ?: false
+
+            // Optimistic update
+            _farmFollowStates.value = _farmFollowStates.value.toMutableMap().apply {
+                put(farmId, !currentState)
+            }
+
+            try {
+                repository.toggleFollow(farmId)
+            } catch (e: Exception) {
+                // Revert on error
+                _farmFollowStates.value = _farmFollowStates.value.toMutableMap().apply {
+                    put(farmId, currentState)
+                }
+            }
         }
     }
+
+//    // follow/ following
+//    private val _isFollowing = MutableStateFlow(false)
+//    val isFollowing: StateFlow<Boolean> = _isFollowing.asStateFlow()
+//
+//    /**
+//     * Call this when you first display a post, to load the button state.
+//     */
+//    fun refreshFollowState(farmId: String) {
+//        viewModelScope.launch {
+//            _isFollowing.value = repository.isFollowing(farmId)
+//        }
+//    }
+//
+//    /**
+//     * Called from your composable when the user taps Follow/Unfollow.
+//     */
+//    fun onToggleFollow(farmId: String) {
+//        viewModelScope.launch {
+//            // This suspend call will flip Firestore and return the new state.
+//            val newState = repository.toggleFollow(farmId)
+//            _isFollowing.value = newState
+//        }
+//    }
 
     // Call these when UI “selects” a post or farm to see details
     fun selectPost(postId: String) {
