@@ -109,8 +109,7 @@ fun MarketPostCard(
         } ?: "Unknown"// fallback if post.timestamp is null
     } ?: "" // fall back if profile ids null
 
-    val commentCount by marketViewModel.selectedCommentCount.collectAsState()
-    val bookmarked by marketViewModel.selectedBookmarked.collectAsState()
+
     val farmFollowStates by marketViewModel.farmFollowStates.collectAsState()
     val isFollowing = farmFollowStates[post.farmId] ?: false // this is because farm followstate in the view model uses map string boolean
 
@@ -134,7 +133,7 @@ fun MarketPostCard(
     // Extract individual properties to avoid showing the whole object
     val likeCount = likeState.likeCount
     val isLiked = likeState.isLiked
-    //val commentCount = likeState.commentCount
+    val commentCount = likeState.commentCount
     val isBookmarked = likeState.isBookmarked
 
     LaunchedEffect(post.farmId) {
@@ -521,9 +520,9 @@ fun MarketPostCard(
 
                 // Bookmark Button
                 Icon(
-                    imageVector = if (bookmarked) Icons.Default.Bookmark else Icons.Outlined.BookmarkBorder,
+                    imageVector = if (isBookmarked) Icons.Default.Bookmark else Icons.Outlined.BookmarkBorder,
                     contentDescription = "Bookmark",
-                    tint = if (bookmarked) MaterialTheme.colorScheme.primary
+                    tint = if (isBookmarked) MaterialTheme.colorScheme.primary
                     else
                         MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                     modifier = Modifier

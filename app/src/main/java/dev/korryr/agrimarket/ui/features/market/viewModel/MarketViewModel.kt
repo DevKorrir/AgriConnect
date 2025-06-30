@@ -8,11 +8,26 @@ import dev.korryr.agrimarket.netObserver.NetworkStatus
 import dev.korryr.agrimarket.ui.features.farm.data.model.FarmProfile
 import dev.korryr.agrimarket.ui.features.market.dataModel.repo.MarketRepository
 import dev.korryr.agrimarket.ui.features.posts.dataModel.dataClass.FarmPost
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+// Data class to hold post interaction state
+data class PostLikeState(
+    val likeCount: Int = 0,
+    val isLiked: Boolean = false,
+    val commentCount: Int = 0,
+    val isBookmarked: Boolean = false
+)
+
 
 @HiltViewModel
 class MarketViewModel @Inject constructor(
@@ -47,22 +62,11 @@ class MarketViewModel @Inject constructor(
     private val _allFarmProfiles = MutableStateFlow<Map<String, FarmProfile>>(emptyMap())
     val allFarmProfiles: StateFlow<Map<String, FarmProfile>> = _allFarmProfiles
 
-    //    init {
-//        fetchAllPostsFromFirebase()
-//    }
     private val userId = auth.currentUser?.uid ?: ""
 
     // SOLUTION 1: Use a Map to store per-post state consistently
     private val _postLikeStates = MutableStateFlow<Map<String, PostLikeState>>(emptyMap())
     val postLikeStates: StateFlow<Map<String, PostLikeState>> = _postLikeStates.asStateFlow()
-
-    // Data class to hold post interaction state
-    data class PostLikeState(
-        val likeCount: Int = 0,
-        val isLiked: Boolean = false,
-        val commentCount: Int = 0,
-        val isBookmarked: Boolean = false
-    )
 
     private val _postsCount = MutableStateFlow(0)
     val postsCount: StateFlow<Int> = _postsCount.asStateFlow()
@@ -188,69 +192,6 @@ class MarketViewModel @Inject constructor(
         }
     }
 
-    // 3) Expose flows for “selected post details” (like count, user liked, comment count, bookmark)
-    private val _selectedPostId = MutableStateFlow<String?>(null)
-    val selectedPostId: StateFlow<String?> = _selectedPostId
-
-//    // 3a) Like count for the selected post
-//    val selectedLikeCount: StateFlow<Int> = _selectedPostId
-//        .filterNotNull()
-//        .flatMapLatest { postId -> repository.streamLikeCount(postId) }
-//        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
-//
-//    // 3b) Did current user like it?
-//    val selectedUserLiked: StateFlow<Boolean> = _selectedPostId
-//        .filterNotNull()
-//        .flatMapLatest { postId -> repository.streamUserLiked(postId) }
-//        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
-
-    // 3c) Comment count for the selected post
-    val selectedCommentCount: StateFlow<Int> = _selectedPostId
-        .filterNotNull()
-        .flatMapLatest { postId -> repository.streamCommentCount(postId) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
-
-    // 3d) Bookmarked?
-    val selectedBookmarked: StateFlow<Boolean> = _selectedPostId
-        .filterNotNull()
-        .flatMapLatest { postId -> repository.streamBookmarked(postId) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
-
-    // 3e) If you ever need “Follower count” or “User follows this farm”
-    private val _selectedFarmId = MutableStateFlow<String?>(null)
-    val selectedFarmId: StateFlow<String?> = _selectedFarmId
-
-//    @OptIn(ExperimentalCoroutinesApi::class)
-//    val selectedFollowerCount: StateFlow<Int> = _selectedFarmId
-//        .filterNotNull()
-//        .flatMapLatest { farmId -> repository.streamFollowerCount(farmId) }
-//        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
-//
-//    @OptIn(ExperimentalCoroutinesApi::class)
-//    val selectedUserFollows: StateFlow<Boolean> = _selectedFarmId
-//        .filterNotNull()
-//        .flatMapLatest { farmId -> repository.streamUserFollows(farmId) }
-//        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
-
-    // Exposed to Compose
-//    private val _likeCount = MutableStateFlow(0)
-//    val likeCount: StateFlow<Int> = _likeCount
-//
-//    private val _userLiked = MutableStateFlow(false)
-//    val userLiked: StateFlow<Boolean> = _userLiked
-
-    /** Call once per post on composition: wires up real‑time streams */
-//    fun observeLikes(postId: String) {
-//        viewModelScope.launch {
-//            repository.streamLikeCount(postId)
-//                .collect { _likeCount.value = it }
-//        }
-//        viewModelScope.launch {
-//            repository.streamUserLiked(postId)
-//                .collect { _userLiked.value = it }
-//        }
-//    }
-
     // Toggle like with optimistic updates
     fun onToggleLike(postId: String) {
         viewModelScope.launch {
@@ -349,39 +290,14 @@ class MarketViewModel @Inject constructor(
         }
     }
 
-//    // follow/ following
-//    private val _isFollowing = MutableStateFlow(false)
-//    val isFollowing: StateFlow<Boolean> = _isFollowing.asStateFlow()
-//
-//    /**
-//     * Call this when you first display a post, to load the button state.
-//     */
-//    fun refreshFollowState(farmId: String) {
-//        viewModelScope.launch {
-//            _isFollowing.value = repository.isFollowing(farmId)
-//        }
+//    // Call these when UI “selects” a post or farm to see details
+//    fun selectPost(postId: String) {
+//        _selectedPostId.value = postId
 //    }
 //
-//    /**
-//     * Called from your composable when the user taps Follow/Unfollow.
-//     */
-//    fun onToggleFollow(farmId: String) {
-//        viewModelScope.launch {
-//            // This suspend call will flip Firestore and return the new state.
-//            val newState = repository.toggleFollow(farmId)
-//            _isFollowing.value = newState
-//        }
+//    fun selectFarm(farmId: String) {
+//        _selectedFarmId.value = farmId
 //    }
-
-    // Call these when UI “selects” a post or farm to see details
-    fun selectPost(postId: String) {
-        _selectedPostId.value = postId
-    }
-
-    fun selectFarm(farmId: String) {
-        _selectedFarmId.value = farmId
-    }
-
 
 
 }
