@@ -21,22 +21,38 @@ import java.util.UUID
 @HiltViewModel
 class FarmPostViewModel @Inject constructor(
     private val repository: FarmPostServiceImpl,
-    private val auth: FirebaseAuth,
+    val auth: FirebaseAuth,
     private val storage: FirebaseStorage,
     private val firestore: FirebaseFirestore
 ) : ViewModel() {
 
+    // Flag when a post creation/upload is in progress
     private val _isPosting = MutableStateFlow(false)
     val isPosting: StateFlow<Boolean> = _isPosting
 
+    // List of all posts for this farmer
+    private val _allPosts = MutableStateFlow<List<FarmPost>>(emptyList())
+    val allPosts: StateFlow<List<FarmPost>> = _allPosts
+
+    // Convenient count of posts
+    val postCount: Int
+        get() = _allPosts.value.size
+
+    // List of most recent posts (if still needed)
     private val _recentPosts = MutableStateFlow<List<FarmPost>>(emptyList())
     val recentPosts: StateFlow<List<FarmPost>> = _recentPosts
 
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error
 
+    // Success flag for post operations
     private val _isPostSuccessful = MutableStateFlow(false)
     val isPostSuccessful: StateFlow<Boolean> = _isPostSuccessful.asStateFlow()
+
+    init {
+        // Load posts for current user on init
+        auth.currentUser?.uid?.let { loadAllPosts(it) }
+    }
 
     /**
      * Creates a new farm post.
@@ -146,7 +162,25 @@ class FarmPostViewModel @Inject constructor(
     fun loadRecentPosts(farmId: String) {
         viewModelScope.launch {
             try {
-                _recentPosts.value = repository.getRecentPosts(farmId)
+                repository.getRecentPosts(farmId).collect { posts ->
+                    _recentPosts.value = posts
+                }
+            } catch (e: Exception) {
+                _error.value = e.localizedMessage
+            }
+        }
+    }
+
+    /**
+     * Loads all posts for the given farmer UID.
+     */
+    private fun loadAllPosts(farmerId: String) {
+        viewModelScope.launch {
+            try {
+                repository.getAllPostsForFarmer(farmerId)
+                    .collect { postsList ->
+                        _allPosts.value = postsList
+                    }
             } catch (e: Exception) {
                 _error.value = e.localizedMessage
             }

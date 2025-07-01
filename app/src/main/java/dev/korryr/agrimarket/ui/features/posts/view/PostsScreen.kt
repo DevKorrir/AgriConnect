@@ -15,11 +15,20 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -29,8 +38,21 @@ import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Publish
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,25 +61,19 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
-import dev.korryr.agrimarket.R
 import dev.korryr.agrimarket.ui.features.posts.viewModel.FarmPostViewModel
 import dev.korryr.agrimarket.ui.shareUI.AgribuzTextField
-import dev.korryr.agrimarket.ui.theme.AlertRed
 import dev.korryr.agrimarket.ui.theme.FertileEarthBrown
-import dev.korryr.agrimarket.ui.theme.RipeCornYellow
-import dev.korryr.agrimarket.ui.theme.SecondaryTextLight
 import dev.korryr.agrimarket.ui.theme.White
-import kotlinx.coroutines.delay
 
 @Composable
 fun CreatePostScreen(
@@ -329,11 +345,11 @@ fun CreatePostScreen(
                         label = "Product Description",
                         hint = "Describe your product in detail...",
                         error = descriptionError,
-                        //leadingIcon = painterResource(id = R.drawable.ic_description), // Replace with your icon
-                        maxLines = 3,
+                        maxLines = 4,
                         keyboardOptions = KeyboardOptions(
+                            capitalization = KeyboardCapitalization.Sentences,
                             keyboardType = KeyboardType.Text,
-                            imeAction = ImeAction.Next
+                            imeAction = ImeAction.Default
                         )
                     )
 
@@ -351,9 +367,8 @@ fun CreatePostScreen(
                         label = "Price (KES)",
                         hint = "0.00",
                         error = priceError,
-                        //leadingIcon = painterResource(id = R.drawable.ic_money), // Replace with your icon
                         keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Number,
+                            keyboardType = KeyboardType.Decimal,
                             imeAction = ImeAction.Next
                         ),
                         //modifier = Modifier.weight(1f)
@@ -373,7 +388,6 @@ fun CreatePostScreen(
                         label = "Quantity",
                         hint = "e.g., 50 kg",
                         error = quantityError,
-                        //leadingIcon = painterResource(id = R.drawable.ic_inventory), // Replace with your icon
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Number,
                             imeAction = ImeAction.Next
@@ -395,7 +409,6 @@ fun CreatePostScreen(
                         label = "Farm Size",
                         hint = "e.g., 2 acres, 500 sqm",
                         error = sizeError,
-                        //leadingIcon = painterResource(id = R.drawable.ic_landscape), // Replace with your icon
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Text,
                             imeAction = ImeAction.Done

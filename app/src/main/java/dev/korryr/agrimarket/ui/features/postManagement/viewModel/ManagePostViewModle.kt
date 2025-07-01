@@ -8,6 +8,7 @@ import dev.korryr.agrimarket.ui.features.posts.dataModel.dataClass.FarmPost
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -80,6 +81,8 @@ class ManagePostViewModel @Inject constructor(
             postsService.deletePost(postId)
                 .fold(
                     onSuccess = {
+                        //remove deleted post from local state instantly
+                        _posts.value = _posts.value.filterNot { it.postId == postId }
                         _isUpdating.value = false
                         _deleteSuccess.value = true
                     },
