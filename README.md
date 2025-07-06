@@ -397,9 +397,126 @@ fun ImagePickerComponent(
                                     context.startActivity(chooserIntent)
 ```
 
+## 🌐 **5. EXTERNAL INTEGRATIONS & LIBRARIES**
+
+### **Third-Party Services & APIs**
+
+#### **🔥 Firebase Integration**
+```kotlin
+// Firebase Authentication
+/**
+ * Firebase implementation of AuthService using email/password.
+ */
+class FirebaseAuthService(
+    private val firebaseAuth: FirebaseAuth
+) : AuthService {
+
+    override suspend fun signUp(email: String, password: String): Result<FirebaseUser> {
+        return try {
+            val result = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
+            val user = result.user
+            if (user != null) Result.success(user)
+            else Result.failure(Throwable("User creation failed"))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+}
+
+// Firestore Database
+@Singleton
+class FirestoreService @Inject constructor() {
+    private val firestore = FirebaseFirestore.getInstance()
+    
+    fun getFarmPosts(): Flow<List<FarmPost>> = callbackFlow {
+        val listener = firestore.collection("farm_posts")
+            .orderBy("timestamp", Query.Direction.DESCENDING)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
+                }
+                
+                val posts = snapshot?.documents?.mapNotNull { doc ->
+                    doc.toObject(FarmPost::class.java)?.copy(id = doc.id)
+                } ?: emptyList()
+                
+                trySend(posts)
+            }
+        
+        awaitClose { listener.remove() }
+    }
+}
 ```
 
----
+#### **Image Processing with Coil**
+```kotlin
+// Optimized image loading
+@Composable
+fun AsyncImageWithPlaceholder(
+    imageUrl: String?,
+    contentDescription: String,
+    modifier: Modifier = Modifier
+) {
+    AsyncImage(
+        model = ImageRequest.Builder(LocalContext.current)
+            .data(imageUrl)
+            .crossfade(true)
+            .transformations(
+                RoundedCornersTransformation(8.dp.toPx())
+            )
+            .build(),
+        contentDescription = contentDescription,
+        modifier = modifier,
+        placeholder = painterResource(R.drawable.placeholder_image),
+        error = painterResource(R.drawable.error_image),
+        contentScale = ContentScale.Crop
+    )
+}
+```
+
+### **External Libraries Used**
+
+**Core Libraries:**
+```kotlin
+// build.gradle.kts (Module: app)
+dependencies {
+    // Firebase
+    implementation("com.google.firebase:firebase-auth:22.3.0")
+    implementation("com.google.firebase:firebase-firestore:24.9.1")
+    implementation("com.google.firebase:firebase-storage:20.3.0")
+    implementation("com.google.firebase:firebase-messaging:23.4.0")
+    
+    // Image Loading
+    implementation("io.coil-kt:coil-compose:2.5.0")
+    
+    // Networking
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+    
+    // Local Database
+    implementation("androidx.room:room-runtime:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
+    kapt("androidx.room:room-compiler:2.6.1")
+    
+    // Dependency Injection
+    implementation("com.google.dagger:hilt-android:2.48")
+    kapt("com.google.dagger:hilt-compiler:2.48")
+    
+    // UI & Navigation
+    implementation("androidx.compose.ui:ui:1.5.4")
+    implementation("androidx.compose.material3:material3:1.1.2")
+    implementation("androidx.navigation:navigation-compose:2.7.5")
+    
+    // Coroutines
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    
+    // Security
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
+}
+```
+
 
 
 
