@@ -77,6 +77,60 @@ override suspend fun uploadImageToStorage(uri: Uri, context: Context): String {
 
 ---
 
+## **2. LOGICAL DESIGN & UI/UX**
+
+### **User Interface & Experience Design**
+
+#### **App Features Overview**
+1. **Multi-Role Authentication System**
+2. **Dynamic Farm Profile Management**
+3. **Intelligent Produce Marketplace** // not yet impl
+4. **Real-time Order Processing** // not yet impl
+5. **Cross-role Messaging System** // not yet impl
+6. **Expert Consultation Platform** // ""
+
+#### **👥 User Interaction Patterns**
+
+**For Farmers:**
+- **Profile Setup**: Form-based input with image picker
+- **Produce Posting**: Profile → Form → Firestore save → ManagePost
+- **Order Management**: //
+- **Expert Chat**: //
+
+**For Buyers:**
+- **Market Browse**: //
+- **Order Placement**: //
+- **Supplier Contact**: //
+
+**For Suppliers:**
+- **Inventory Management**: //
+- **Farmer Outreach**: //
+- **Credit System**: //
+
+#### **Data Flow Architecture**
+```
+User Input → ViewModel → Repository → Firebase → UI State Update
+     ↓
+SharedPreferences ← Data Validation ← Business Logic ← Response
+```
+
+#### **Input/Output Mapping**
+
+| Feature | Input | Processing | Output |
+|---------|-------|------------|---------|
+| **Farm Creation** | Name, Location, Crop Types, Image URI | Validation → Firebase Storage → Firestore | Farm Profile Document |
+| **Produce Post** | Image, Description, Price, Quantity | Image compression → Upload → Metadata save | Market Listing |
+
+
+#### **UI/UX Design Principles**
+- **Consistent Navigation**: Bottom navigation
+- **Intuitive Icons**: Material Design icons with text labels
+- **Responsive Layout**: Adaptive design for different screen sizes
+- **Accessibility**: Theme toggle and adaptive to the device system
+- **Offline Feedback**: Clear indicators for network status
+
+---
+
 
 
 
