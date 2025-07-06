@@ -31,25 +31,6 @@ class FarmPostServiceImpl @Inject constructor(
         }
     }
 
-//    override suspend fun getRecentPosts(farmId: String): List<FarmPost> {
-//        // This function can also be modified to return Result<List<FarmPost>>
-//        // if you want consistent error handling, but for now, we'll leave it
-//        // as you might handle its errors differently.
-//        return try {
-//         postsCollection.whereEqualTo("farmId", farmId)
-//            .orderBy("timestamp", /*Query.Direction.DESCENDING*/)
-//            .limit(5)
-//            .get()
-//            .await()
-//            .toObjects(FarmPost::class.java)
-//            } catch (e: Exception) {
-//            // Handle error, e.g., return empty list or rethrow as a custom exception
-//            // For now, let's return an empty list on error for this example.
-//            // In a real app, you'd likely want to propagate the error.
-//            emptyList()
-//        }
-//    }
-
     override suspend fun getRecentPosts(farmId: String): Flow<List<FarmPost>> = callbackFlow {
         val listener = postsCollection
             .whereEqualTo("farmId", farmId)
