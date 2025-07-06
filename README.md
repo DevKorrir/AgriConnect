@@ -132,6 +132,191 @@ SharedPreferences ← Data Validation ← Business Logic ← Response
 ---
 
 
+## **3. PHYSICAL DESIGN & CODE QUALITY**
+
+### **Architecture & Code Structure**
+
+#### ** Application Architecture**
+```
+┌─────────────────────────────────────────────────────────────┐
+│                 UI Layer (Jetpack Compose)                  │
+│  ┌─────────────┬─────────────┬─────────────┬─────────────┐  │
+│  │   Screens   │ Components  │  Navigation │   Theme     │  │
+│  └─────────────┴─────────────┴─────────────┴─────────────┘  │
+├─────────────────────────────────────────────────────────────┤
+│                 ViewModel Layer (MVVM)                      │
+│  ┌─────────────┬─────────────┬─────────────┬─────────────┐  │
+│  │   States    │  Events     │  Effects    │  Business   │  │
+│  │             │             │             │  Logic      │  │
+│  └─────────────┴─────────────┴─────────────┴─────────────┘  │
+├─────────────────────────────────────────────────────────────┤
+│                 Repository Layer                            │
+│  ┌─────────────┬─────────────┬─────────────┬─────────────┐  │
+│  │   Remote    │    Local    │   Cache     │   Models    │  │
+│  │   Data      │    Data     │  Manager    │             │  │
+│  └─────────────┴─────────────┴─────────────┴─────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+#### **📁 Project Structure**
+```
+app/
+├── src/main/java/dev/korryr/agrimarket/
+│   ├── di/                              # Dependency Injection
+│   │   ├── AppModule.kt
+│   │   ├── NetworkModule.kt
+│   │   └── RepositoryModule.kt
+│   ├── navigation/
+│   │   ├── AppNavigation.kt
+│   │   └── NavigationDestinations.kt
+│   ├── ui/
+│   │   ├── components/                  # Reusable UI Components
+│   │   │   ├── AgribuzTextField.kt
+│   │   │   ├── StatisticCard.kt
+│   │   │   └── LoadingButton.kt
+│   │   ├── features/                    # Feature-specific screens
+│   │   │   ├── auth/
+│   │   │   ├── farm/
+│   │   │   ├── market/
+│   │   │   ├── orders/
+│   │   │   └── profile/
+│   │   └── theme/
+│   │       ├── Color.kt
+│   │       ├── Theme.kt
+│   │       └── Typography.kt
+│   ├── networkObserver/
+│   │   ├── NetworkStatus.kt
+│   │   ├── factory/
+│   │   ├── viewModel/
+|   |   └── ConnectivityObserve.kt
+│   └── viewmodels/
+│       ├── AuthViewModel.kt
+│       ├── FarmViewModel.kt
+│       └── MarketViewModel.kt
+```
+
+#### ** UI Layout Implementation**
+- **No XML Files**: 100% Jetpack Compose implementation
+- **Reusable Components**: Custom composables for consistent design
+- **State Management**: Unidirectional data flow with StateFlow
+- **Theme System**: Material3 with custom color schemes
+
+#### **Data Storage Strategy**
+
+**1. SharedPreferences (Encrypted)**
+```kotlin
+@Singleton
+class AuthPreferencesRepository @Inject constructor (context: Context){
+    private val dataStore = context.dataStore
+
+    companion object {
+        private val KEY_LOGGED_IN = booleanPreferencesKey("is_logged_in")
+        private val KEY_USER_ID = stringPreferencesKey("user_id")
+    }
+
+    suspend fun setLoggedIn(userId: String) {
+        dataStore.edit { preferences ->
+            preferences[KEY_LOGGED_IN] = true
+            preferences[KEY_USER_ID] = userId
+        }
+    }
+
+    suspend fun setLoggedOut() {
+        dataStore.edit { preferences ->
+            preferences[KEY_LOGGED_IN] = false
+            preferences.remove(KEY_USER_ID)
+        }
+    }
+
+    val isLoggedIn: Flow<Boolean> = dataStore.data.map { preferences ->
+        preferences[KEY_LOGGED_IN] ?: false
+    }
+
+    val userId: Flow<String?> = dataStore.data.map { preferences ->
+        preferences[KEY_USER_ID]
+    }
+}
+```
+
+**2. Firestore Database Structure**
+```
+firestore/
+├── users/
+│   └── {userId}/
+│       ├── profile: UserProfile
+│       ├── following/
+│       └── bookmarks/
+├── farms/
+│   └── {farmId}/
+│       ├── basic_info: FarmBasicInfo
+│       ├── type: List<CropInfo>
+│       └── followers/
+├── farm_posts/
+│   └── {postId}/
+│       ├── produce_info: ProduceInfo
+│       ├── farmer_info: FarmerReference
+│       └── availability: AvailabilityStatus
+└── orders/
+    └── {orderId}/
+        ├── buyer_info: BuyerInfo
+        ├── seller_info: SellerInfo
+        ├── items: List<OrderItem>
+        └── status: OrderStatus
+```
+
+#### **Code Quality Standards**
+
+**Clean Code Practices:**
+```kotlin
+// Example: Well-structured ViewModel with clear separation of concerns
+@HiltViewModel
+class FarmProfileViewModel @Inject constructor(
+    private val farmRepository: FarmRepository,
+    private val imageRepository: ImageRepository
+) : ViewModel() {
+    
+    private val _uiState = MutableStateFlow(FarmProfileUiState())
+    val uiState = _uiState.asStateFlow()
+    
+    // Clear function naming and single responsibility
+    fun createFarmProfile(farmData: FarmProfile) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            
+            when (val result = farmRepository.createFarm(farmData)) {
+                is Result.Success -> {
+                    _uiState.update { 
+                        it.copy(
+                            isLoading = false,
+                            isSuccess = true,
+                            farmId = result.data
+                        )
+                    }
+                }
+                is Result.Error -> {
+                    _uiState.update { 
+                        it.copy(
+                            isLoading = false,
+                            error = result.exception.message
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+```
+
+**Code Organization Features:**
+- **Immutable Data Classes**: All models are immutable with copy functions
+- **Single Responsibility**: Each class has one clear purpose
+- **Dependency Injection**: Hilt for testable, loosely coupled code
+- **Error Handling**: Comprehensive try-catch blocks with logging
+- **Documentation**: KDoc comments for all public functions
+
+---
+
+
 
 
 
