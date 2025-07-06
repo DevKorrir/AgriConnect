@@ -15,3 +15,5 @@
 local.properties
 # My additions
 app/release/app-release.apk
+/google-services.json
+
