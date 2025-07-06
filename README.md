@@ -317,6 +317,91 @@ class FarmProfileViewModel @Inject constructor(
 ---
 
 
+## 🔧 **4. ANDROID COMPONENTS & TOOL USAGE**
+
+### **Android Framework Integration**
+
+#### **Activities & Fragments**
+```kotlin
+// Single Activity Architecture with Jetpack Compose
+@AndroidEntryPoint
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        setContent {
+            val navController = rememberNavController()
+            val paddingValues = PaddingValues()
+            val themeManager: ThemeViewModel = viewModel()
+
+            AgriMarketTheme(
+                darkTheme = themeManager.isDarkThemeEnabled
+            ) {
+                NavGraph(
+                    modifier = Modifier,
+                    navController = navController,
+                    scaffoldPadding = paddingValues,
+                    themeManager = themeManager
+                )
+               
+            }
+        }
+    }
+}
+
+// No Fragments - Pure Compose Navigation
+@Composable
+fun AgriMarketApp() {
+    val navController = rememberNavController()
+    
+    NavHost(
+        navController = navController,
+        startDestination = "auth"
+    ) {
+        composable("auth") { AuthScreen(navController) }
+        composable("main") { MainScreen(navController) }
+        composable("farm_profile") { FarmProfileScreen(navController) }
+        // ... other destinations
+    }
+}
+```
+
+#### **Intent Usage**
+```kotlin
+// Image Picker Intent
+@Composable
+fun ImagePickerComponent(
+    onImageSelected: (Uri) -> Unit
+) {
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let { onImageSelected(it) }
+    }
+    
+    Button(
+        onClick = { launcher.launch("image/*") }
+    ) {
+        Text("Select Image")
+    }
+}
+
+// ShareButton Intent
+ val shareIntent = Intent().apply {
+                                        action = Intent.ACTION_SEND
+                                        type = "text/plain"
+                                        putExtra(Intent.EXTRA_TEXT, shareText)
+                                        putExtra(Intent.EXTRA_SUBJECT, " ${post.type} from $name - AgriMarket")
+                                    }
+                                    val chooserIntent = Intent.createChooser(shareIntent, "Share this farm product! 🌱")
+                                    context.startActivity(chooserIntent)
+```
+
+```
+
+---
+
+
 
 
 
