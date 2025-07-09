@@ -25,18 +25,14 @@ class MainActivity : ComponentActivity() {
 
             AgriMarketTheme(
                 darkTheme = themeManager.isDarkThemeEnabled
-            ){
-                //Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-//                    AgriMarketingApp(
-//                        modifier = Modifier.padding(1.dp)
-//                    )
+            ) {
                 NavGraph(
                     modifier = Modifier,
                     navController = navController,
                     scaffoldPadding = paddingValues,
                     themeManager = themeManager
                 )
-               // }
+
             }
         }
     }

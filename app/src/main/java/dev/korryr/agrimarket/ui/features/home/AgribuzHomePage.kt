@@ -238,7 +238,7 @@ fun HomePage(
             var visible by remember { mutableStateOf(false) }
 
             LaunchedEffect(Unit) {
-                delay(7000) // 2 seconds loading time
+                delay(1000) // 2 seconds loading time
                 isLoading = false
                 visible = true
             }

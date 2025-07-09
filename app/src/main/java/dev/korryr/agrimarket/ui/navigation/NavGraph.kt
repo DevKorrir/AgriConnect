@@ -2,6 +2,12 @@ package dev.korryr.agrimarket.ui.navigation
 
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.EaseInCubic
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
@@ -99,8 +105,21 @@ fun NavGraph(
         bottomBar = {
             AnimatedVisibility(
                 visible = shouldShowBottomBar, //bottomBarState.value,
-                enter = slideInVertically(initialOffsetY = { it }),
-                exit = slideOutVertically(targetOffsetY = { it }),
+                enter = slideInVertically(
+                    initialOffsetY = { it },
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessLow
+                    )
+                ) + fadeIn(animationSpec = tween(durationMillis = 400)),
+                exit = slideOutVertically(
+                    targetOffsetY = { it },
+                    animationSpec = tween(
+                        durationMillis = 300,
+                        easing = EaseInCubic
+                    )
+
+                ) + fadeOut(animationSpec = tween(durationMillis = 300)),
                 content = {
                     NavigationBar(
                         containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.95f),
@@ -271,20 +290,20 @@ fun NavGraph(
                 AdminPanel()
             }
 
-            composable(BottomScreens.MarketPlace.route) {
+            composable(Screen.MarketPlace.route) {
                 MarketScreen(
                     navController = navController
                 )
             }
-            composable(BottomScreens.Message.route) {
+            composable(Screen.Messages.route) {
                 MessageScreen()
             }
 
-            composable(BottomScreens.Orders.route) {
+            composable(Screen.Orders.route) {
                 OrderScreen()
             }
 
-            composable(BottomScreens.Profile.route) {
+            composable(Screen.Profile.route) {
                 FarmProfileScreen(
                     onBackPressed = {
                         navController.navigateUp()
